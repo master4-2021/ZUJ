@@ -1,0 +1,8 @@
+// jwt
+const JWT_TOKEN = 'JWT_TOKEN';
+const REFRESH_JWT_TOKEN = 'REFRESH_JWT_TOKEN';
+
+// API
+const API_CONTEXT = 'API';
+
+export { API_CONTEXT, JWT_TOKEN, REFRESH_JWT_TOKEN };
