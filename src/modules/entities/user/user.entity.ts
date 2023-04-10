@@ -1,5 +1,5 @@
 import { Column, Entity } from 'typeorm';
-import { Role } from '../../../common/decorators/role';
+import { Role } from '../../../common/decorators/roles';
 import { BaseEntity } from '../../base/base.entity';
 
 @Entity('user')

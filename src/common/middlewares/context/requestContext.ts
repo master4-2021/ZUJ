@@ -1,5 +1,6 @@
 import * as cls from 'cls-hooked';
 import { Request, Response } from 'express';
+import { CORRELATIONID } from '../../constants';
 
 export class RequestContext {
   public static nsid = 'REQUEST_CONTEXT';
@@ -27,7 +28,7 @@ export class RequestContext {
   public static getCorrelationId(): string {
     const ctx = RequestContext.currentContext();
     if (ctx) {
-      return ctx.request.headers['x-correlation-id'] as string;
+      return ctx.request.headers[CORRELATIONID] as string;
     }
     return null;
   }

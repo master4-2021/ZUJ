@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Post } from '@nestjs/common';
 import { Public } from '../../../common/decorators/public';
-import { Role, Roles } from '../../../common/decorators/role';
+import { Role, Roles } from '../../../common/decorators/roles';
 import { RefreshTokenDto, RevokeTokenDto } from './token.dto';
 import { TokenService } from './token.service';
 import { TokenEntity } from './token.entity';

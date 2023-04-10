@@ -1,4 +1,4 @@
-import { Role } from '../../../common/decorators/role';
+import { Role } from '../../../common/decorators/roles';
 import { EncryptionAndHashService } from '../../encryptionAndHash/encrypttionAndHash.service';
 import { UserEntity } from '../../entities/user/user.entity';
 import { UserService } from '../../entities/user/user.service';

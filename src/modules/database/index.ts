@@ -8,15 +8,15 @@ import { ConfigModule } from '../config/config.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('database.postgres.host'),
-        port: configService.get<number>('database.postgres.port'),
-        username: configService.get<string>('database.postgres.username'),
-        password: configService.get<string>('database.postgres.password'),
-        database: configService.get<string>('database.postgres.database'),
+        type: 'mysql',
+        host: configService.get<string>('database.mysql.host'),
+        port: configService.get<number>('database.mysql.port'),
+        username: configService.get<string>('database.mysql.username'),
+        password: configService.get<string>('database.mysql.password'),
+        database: configService.get<string>('database.mysql.database'),
         entities: [],
         synchronize:
-          configService.get<string>('database.postgres.synchronize') === 'true',
+          configService.get<string>('database.mysql.synchronize') === 'true',
         autoLoadEntities: true,
       }),
       inject: [ConfigService],

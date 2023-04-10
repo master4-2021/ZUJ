@@ -5,4 +5,18 @@ const REFRESH_JWT_TOKEN = 'REFRESH_JWT_TOKEN';
 // API
 const API_CONTEXT = 'API';
 
-export { API_CONTEXT, JWT_TOKEN, REFRESH_JWT_TOKEN };
+// Filter
+const PARSED_FILTER = 'parsedFilter';
+
+// mics
+const CORRELATIONID = 'x-correlation-id';
+const TIMESTAMPS = 'timestamps';
+
+export {
+  API_CONTEXT,
+  JWT_TOKEN,
+  REFRESH_JWT_TOKEN,
+  PARSED_FILTER,
+  CORRELATIONID,
+  TIMESTAMPS,
+};

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  And,
   Equal,
   FindOperator,
   FindOptionsOrder,
@@ -8,6 +9,7 @@ import {
   In,
   LessThan,
   LessThanOrEqual,
+  Like,
   MoreThan,
   MoreThanOrEqual,
   Not,
@@ -26,7 +28,10 @@ import {
   FilterRequestQuery,
   FilterValue,
   ParsedFilterQuery,
+  Sort,
 } from './types';
+import createObject from '../../utils/createObject';
+import getDateOrValue from '../../utils/getDateOrValue';
 
 @Injectable()
 export class FilterService {
@@ -40,9 +45,9 @@ export class FilterService {
           this.parseFilterFromQueryString<T>(query.filter),
         );
       }
-      if (query.projections) {
+      if (query.fields) {
         parsedFilterQuery.select = this.parseSelectFromQueryString<T>(
-          query.projections,
+          query.fields,
         );
       }
       if (query.sort) {
@@ -68,26 +73,40 @@ export class FilterService {
     }
   }
 
+  private parseKeyValue(
+    key: string,
+    value: FilterValue | FindOperator<FilterValue>,
+    checkDateValue = true,
+  ) {
+    if (!checkDateValue) {
+      return createObject(key, value);
+    }
+    return createObject(key, getDateOrValue(value));
+  }
+
   private convertOperator(operator: FilterOperator): FindOperator<FilterValue> {
     const key = Object.keys(operator)[0] as FilterOperatorEnum;
     const value = operator[key];
     switch (key) {
-      case FilterOperatorEnum.in:
-        return In(value as FilterValue[]);
-      case FilterOperatorEnum.nin:
-        return Not(In(value as FilterValue[]));
-      case FilterOperatorEnum.ne:
-        return Not(Equal(value as FilterValue));
-      case FilterOperatorEnum.gt:
-        return MoreThan(value as FilterValue);
-      case FilterOperatorEnum.gte:
-        return MoreThanOrEqual(value as FilterValue);
-      case FilterOperatorEnum.lt:
-        return LessThan(value as FilterValue);
-      case FilterOperatorEnum.lte:
-        return LessThanOrEqual(value as FilterValue);
+      case FilterOperatorEnum.IN:
+        return In(getDateOrValue(value) as FilterValue[]);
+      case FilterOperatorEnum.NIN:
+        return Not(In(getDateOrValue(value) as FilterValue[]));
+      case FilterOperatorEnum.NE:
+        return Not(Equal(getDateOrValue(value) as FilterValue));
+      case FilterOperatorEnum.GT:
+        return MoreThan(getDateOrValue(value) as FilterValue);
+      case FilterOperatorEnum.GTE:
+        return MoreThanOrEqual(getDateOrValue(value) as FilterValue);
+      case FilterOperatorEnum.LT:
+        return LessThan(getDateOrValue(value) as FilterValue);
+      case FilterOperatorEnum.LTE:
+        return LessThanOrEqual(getDateOrValue(value) as FilterValue);
+      case FilterOperatorEnum.LIKE:
+        // string only
+        return Like(`%${value}%` as FilterValue);
       default:
-        return Equal(value as FilterValue);
+        return Equal(getDateOrValue(value) as FilterValue);
     }
   }
 
@@ -97,14 +116,22 @@ export class FilterService {
     } = {};
     for (const key in filter) {
       if (typeof filter[key] === 'object' && filter[key] !== null) {
-        parsedBaseFilter[key] = this.convertOperator(
-          filter[key] as FilterOperator,
+        Object.assign(
+          parsedBaseFilter,
+          this.parseKeyValue(
+            key,
+            And(this.convertOperator(filter[key] as FilterOperator)),
+            false,
+          ),
         );
       } else {
-        parsedBaseFilter[key] = filter[key] as FilterValue;
+        Object.assign(
+          parsedBaseFilter,
+          this.parseKeyValue(key, filter[key] as FilterValue),
+        );
       }
     }
-    return filter as FindOptionsWhere<T>;
+    return parsedBaseFilter as FindOptionsWhere<T>;
   }
 
   private parseFilterFromQueryString<T>(filter: string): Filter<T> {
@@ -124,8 +151,17 @@ export class FilterService {
             orFilter.push(parsedBaseFilter);
           });
         } else {
-          parsedFilter[key] = this.convertOperator(filter[key]);
+          Object.assign(
+            parsedFilter,
+            this.parseKeyValue(
+              key,
+              And(this.convertOperator(filter[key])),
+              false,
+            ),
+          );
         }
+      } else {
+        Object.assign(parsedFilter, this.parseKeyValue(key, filter[key]));
       }
     }
     if (orFilter.length > 0) {
@@ -142,15 +178,22 @@ export class FilterService {
     const parsed = JSON.parse(projections) as { [P in keyof T]?: number };
     return Object.keys(parsed).reduce((acc, key) => {
       if (parsed[key] === 1) {
-        acc[key] = true;
+        Object.assign(acc, createObject(key, true));
       } else {
-        acc[key] = false;
+        Object.assign(acc, createObject(key, false));
       }
       return acc;
     }, {});
   }
 
   private parseSortFromQueryString<T>(sort: string): FindOptionsOrder<T> {
-    return JSON.parse(sort);
+    const parsed = JSON.parse(sort) as Sort<T>;
+    return Object.keys(parsed).reduce((acc, key) => {
+      Object.assign(
+        acc,
+        createObject(key, (parsed[key] as string).toUpperCase()),
+      );
+      return acc;
+    }, {});
   }
 }

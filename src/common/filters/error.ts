@@ -8,9 +8,9 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { LoggerService } from '../../modules/logger/logger.service';
-import getApiInfo from '../../utils/apiInfo';
+import getRequestInfo from '../../utils/requestInfo';
 import { generateCode } from '../../utils/codeGenerator';
-import { API_CONTEXT } from '../constants';
+import { API_CONTEXT, CORRELATIONID, TIMESTAMPS } from '../constants';
 import {
   ErrorMessageEnum,
   FORBIDDEN,
@@ -19,6 +19,7 @@ import {
   UNAUTHORIZED,
 } from '../constants/errors';
 import { CustomException } from '../exceptions';
+import { DateTime } from 'luxon';
 
 @Catch()
 export class ErrorFilter implements ExceptionFilter {
@@ -26,33 +27,34 @@ export class ErrorFilter implements ExceptionFilter {
   catch(error: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const req = host.switchToHttp().getRequest() as Request;
-    const correlationId = req.headers['x-correlation-id'];
+    const correlationId = req.headers[CORRELATIONID];
 
     this.logger.setLogId(generateCode({ length: 8 }));
+
+    const now = DateTime.now().toISO();
+    const errorResponse = this.getErrorResponse(error);
+    const response = {
+      url: `[${req.method}] ${req.url}`,
+      ...errorResponse,
+      correlationId,
+      timestamp: now,
+      took: `${
+        DateTime.fromISO(now).millisecond -
+        DateTime.fromISO(req.headers[TIMESTAMPS] as string).millisecond
+      } ms`,
+    };
+
     this.logger.error_(
       `Failed to ${req.method} ${req.url}`,
       error,
       API_CONTEXT,
       {
-        request: getApiInfo(req),
+        request: getRequestInfo(req),
+        response,
       },
     );
-    const response = this.getErrorResponse(error);
-    const now = new Date().toISOString();
 
-    ctx
-      .getResponse()
-      .status(response.statusCode)
-      .json({
-        url: `[${req.method}] ${req.url}`,
-        ...response,
-        correlationId,
-        timestamp: now,
-        took: `${
-          new Date(now).valueOf() -
-          new Date(req.headers['timestamp'] as string).valueOf()
-        } ms`,
-      });
+    ctx.getResponse().status(response.statusCode).json(response);
   }
 
   private getErrorResponse(error: Error) {

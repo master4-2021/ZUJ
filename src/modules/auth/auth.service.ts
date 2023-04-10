@@ -5,7 +5,7 @@ import {
   UNAUTHORIZED,
   USER_EXISTED,
 } from '../../common/constants/errors';
-import { Role } from '../../common/decorators/role';
+import { Role } from '../../common/decorators/roles';
 import { BusinessException } from '../../common/exceptions';
 import { EncryptionAndHashService } from '../encryptionAndHash/encrypttionAndHash.service';
 import { TokenEntity } from '../entities/token/token.entity';

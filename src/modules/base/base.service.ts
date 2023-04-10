@@ -127,11 +127,20 @@ export abstract class BaseService<
   async deleteById(id: string): Promise<DeleteResult> {
     const entity = await this.findById(id);
     if (!entity) {
-      return undefined;
+      return {
+        affected: 0,
+        raw: undefined,
+      };
     }
     return await this.repository.delete({
       id: entity.id,
     } as FindOptionsWhere<T>);
+  }
+
+  async deleteMany(filterQuery: ParsedFilterQuery<T>): Promise<DeleteResult> {
+    return await this.repository.delete(
+      filterQuery.where as FindOptionsWhere<T>,
+    );
   }
 
   private getSelectQuery(

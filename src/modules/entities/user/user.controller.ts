@@ -1,19 +1,16 @@
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { AuthorizedUser } from '../../../common/decorators/authorizedUser';
-import { Role, Roles } from '../../../common/decorators/role';
+import { Role, Roles } from '../../../common/decorators/roles';
 import { ValidatedUser } from '../../auth/types';
-import { FilterService } from '../../filter/filter.service';
-import { FilterRequestQuery } from '../../filter/types';
+import { ParsedFilterQuery } from '../../filter/types';
 import { ChangePasswordDto, UpdateUserDto } from './user.dto';
 import { UserService } from './user.service';
 import { UserEntity } from './user.entity';
+import { Filter } from '../../../common/decorators/filter';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly filterService: FilterService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Roles(Role.ADMIN)
   @Get(':id')
@@ -23,9 +20,10 @@ export class UserController {
 
   @Roles(Role.ADMIN)
   @Get()
-  async findUsers(@Query() query: FilterRequestQuery): Promise<UserEntity[]> {
-    const parsedFilterQuery = this.filterService.parseFilterRequestQuery(query);
-    return this.userService.find(parsedFilterQuery);
+  async findUsers(
+    @Filter() filter: ParsedFilterQuery<UserEntity>,
+  ): Promise<UserEntity[]> {
+    return this.userService.find(filter);
   }
 
   @Roles(Role.USER, Role.ADMIN)

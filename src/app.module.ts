@@ -2,13 +2,13 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
+  RequestMethod,
   ValidationPipe,
 } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ErrorFilter } from './common/filters/error';
 import { CorrelationIdMiddleware } from './common/middlewares/correlationId';
 import { ConfigModule } from './modules/config/config.module';
-import { CrudModule } from './modules/entities/crud/crud.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TokenModule } from './modules/entities/token/token.module';
 import { UserModule } from './modules/entities/user/user.module';
@@ -28,6 +28,10 @@ import { FilterModule } from './modules/filter/filter.module';
 import { LoggingInterceptor } from './common/interceptors/logging';
 import { HealthModule } from './modules/health/health.module';
 import { AppController } from './app.controller';
+import { TournamentModule } from './modules/entities/tournament/tournament.module';
+import { ClubModule } from './modules/entities/club/club.module';
+import { FixtureModule } from './modules/entities/fixture/fixture.module';
+import { FilterQueryMiddleware } from './common/middlewares/filterQuery';
 
 @Module({
   imports: [
@@ -36,13 +40,15 @@ import { AppController } from './app.controller';
     TokenJwtModule,
     RefreshTokenJwtModule,
     UserModule,
-    CrudModule,
     AuthModule,
     TokenModule,
     EncryptionAndHashModule,
     LoggerModule,
     FilterModule,
     HealthModule,
+    TournamentModule,
+    ClubModule,
+    FixtureModule,
   ],
   providers: [
     {
@@ -55,11 +61,11 @@ import { AppController } from './app.controller';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformResponseInterceptor,
+      useClass: LoggingInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
+      useClass: TransformResponseInterceptor,
     },
     {
       provide: APP_FILTER,
@@ -81,5 +87,8 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(RequestContextMiddleware).forRoutes('*');
     consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    consumer
+      .apply(FilterQueryMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.GET });
   }
 }

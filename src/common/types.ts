@@ -14,3 +14,19 @@ export type GenericError = {
   statusCode: number;
   messages: Record<string, string>;
 };
+
+export enum FixtureStatus {
+  LIVE = 'live',
+  UPCOMING = 'upcoming',
+  FINISHED = 'finished',
+  SCHEDULED = 'scheduled',
+}
+
+export enum Region {
+  EN = 'en',
+  ES = 'es',
+  IT = 'it',
+  DE = 'de',
+  FR = 'fr',
+  EU = 'eu',
+}

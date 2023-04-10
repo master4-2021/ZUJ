@@ -1,4 +1,4 @@
-import Bluebird from 'bluebird';
+import * as Bluebird from 'bluebird';
 
 type ConditionFunc<T> = (value: T) => boolean;
 type ActionFunc<T> = (value: T) => Promise<T>;

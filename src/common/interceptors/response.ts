@@ -8,6 +8,8 @@ import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Response } from '../types';
+import { CORRELATIONID, TIMESTAMPS } from '../constants';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class TransformResponseInterceptor implements NestInterceptor {
@@ -17,7 +19,7 @@ export class TransformResponseInterceptor implements NestInterceptor {
   ): Observable<Response> {
     return next.handle().pipe(
       map((data) => {
-        const now = new Date().toISOString();
+        const now = DateTime.now().toISO();
         const request: Request = context.switchToHttp().getRequest();
         return {
           url: `[${request.method}] ${request.url}`,
@@ -25,11 +27,11 @@ export class TransformResponseInterceptor implements NestInterceptor {
           statusCode: context.switchToHttp().getResponse().statusCode,
           message: 'OK',
           data,
-          correlationId: request.headers['x-correlation-id'] as string,
+          correlationId: request.headers[CORRELATIONID] as string,
           timestamp: now,
           took: `${
-            new Date(now).valueOf() -
-            new Date(request.headers['timestamp'] as string).valueOf()
+            DateTime.fromISO(now).millisecond -
+            DateTime.fromISO(request.headers[TIMESTAMPS] as string).millisecond
           } ms`,
         };
       }),

@@ -1,4 +1,4 @@
-import { Role } from '../../common/decorators/role';
+import { Role } from '../../common/decorators/roles';
 
 export type JwtPayload = {
   username: string;

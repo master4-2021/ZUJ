@@ -19,6 +19,7 @@ export enum ErrorMessageEnum {
   invalidOldPassword = 'invalidOldPassword',
   userNamePasswordMissing = 'userNamePasswordMissing',
   functionError = 'functionError',
+  startDateGreaterThanEndDate = 'startDateGreaterThanEndDate',
 }
 
 const VALIDATION_ERROR = (errs: ValidationError[]): GenericError => {
@@ -59,6 +60,7 @@ const INVALID_FILTER_QUERY: GenericError = {
   statusCode: HttpStatus.BAD_REQUEST,
   messages: {
     invalidFilter: 'Invalid filter query',
+    startDateGreaterThanEndDate: 'Start date greater than end date',
   },
 };
 const UNAUTHORIZED: GenericError = {

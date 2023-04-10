@@ -14,6 +14,7 @@ import { TokenEntity } from './token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import * as jwt from 'jsonwebtoken';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class TokenService extends BaseService<LoggerService, TokenEntity> {
@@ -52,7 +53,10 @@ export class TokenService extends BaseService<LoggerService, TokenEntity> {
       },
     });
 
-    if (!tokenRecord || tokenRecord.refreshExpiresIn < new Date()) {
+    if (
+      !tokenRecord ||
+      tokenRecord.refreshExpiresIn < DateTime.now().toJSDate()
+    ) {
       throw new BusinessException(
         REFRESH_TOKEN_ERROR,
         ErrorMessageEnum.invalidRefreshToken,
@@ -96,10 +100,10 @@ export class TokenService extends BaseService<LoggerService, TokenEntity> {
       accessToken,
       refreshToken,
       userId: tokenDto.userId,
-      refreshExpiresIn: new Date(
-        Date.now() +
+      refreshExpiresIn: DateTime.fromMillis(
+        DateTime.now().millisecond +
           this.configService.get<number>('jwt.refreshExpiresIn') * 1000,
-      ),
+      ).toJSDate(),
     });
   }
 

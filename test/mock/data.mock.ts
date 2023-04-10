@@ -1,5 +1,5 @@
 import { DeleteResult } from 'typeorm';
-import { Role } from '../../src/common/decorators/role';
+import { Role } from '../../src/common/decorators/roles';
 import { LoginDto, RegisterDto } from '../../src/modules/auth/auth.dto';
 import { ValidatedUser } from '../../src/modules/auth/types';
 import {
@@ -8,6 +8,7 @@ import {
 } from '../../src/modules/entities/token/token.dto';
 import { TokenEntity } from '../../src/modules/entities/token/token.entity';
 import { UserEntity } from '../../src/modules/entities/user/user.entity';
+import { DateTime } from 'luxon';
 
 // Data input
 const mockLoginDto: LoginDto = {
@@ -42,7 +43,7 @@ const mockValidatedUser: ValidatedUser = {
 const mockToken: TokenEntity = {
   accessToken: 'test',
   refreshToken: 'test',
-  refreshExpiresIn: new Date(),
+  refreshExpiresIn: DateTime.now().toJSDate(),
   userId: 'test',
   user: {
     id: 'test',
