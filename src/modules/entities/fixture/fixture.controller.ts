@@ -15,8 +15,7 @@ export class FixtureController {
   async getFixtures(
     @Filter() filter: ParsedFilterQuery<FixtureEntity>,
   ): Promise<FixtureEntity[]> {
-    filter.relations = { tournament: true, home: true, away: true };
-    return this.fixtureService.find(filter);
+    return this.fixtureService.getFixtures(filter);
   }
 
   @Roles(Role.ADMIN, Role.USER)

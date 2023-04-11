@@ -12,6 +12,7 @@ import {
 
 import { DateTime } from 'luxon';
 import { CalendarQuery } from './types';
+import { ParsedFilterQuery } from '../../filter/types';
 
 @Injectable()
 export class FixtureService extends BaseService<LoggerService, FixtureEntity> {
@@ -21,6 +22,15 @@ export class FixtureService extends BaseService<LoggerService, FixtureEntity> {
     logger: LoggerService,
   ) {
     super(fixtureRepository, logger);
+  }
+
+  async getFixtures(
+    filter: ParsedFilterQuery<FixtureEntity>,
+  ): Promise<FixtureEntity[]> {
+    filter.relations = { tournament: true, home: true, away: true };
+    filter.order = { kickoffTime: 'ASC' };
+
+    return this.fixtureRepository.find(filter);
   }
 
   async getFixturesCalendar(query: CalendarQuery): Promise<Date[]> {
