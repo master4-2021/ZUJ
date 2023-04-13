@@ -1,15 +1,15 @@
 import { DeleteResult } from 'typeorm';
 import { Role } from '../../src/common/decorators/roles';
-import { TokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
+import { RefreshTokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
 import { UserEntity } from '../../src/modules/entities/user/user.entity';
 import { DateTime } from 'luxon';
 import { JwtPayload } from '../../src/modules/auth/types';
+import { RefreshTokenPayload } from '../../src/modules/entities/refreshToken/types';
 
 // Data output
 
-const mockToken: TokenEntity = {
+const mockRefreshToken: RefreshTokenEntity = {
   id: 'id',
-  accessToken: 'accessToken',
   refreshToken: 'refreshToken',
   refreshExpiresIn: DateTime.now().plus({ days: 30 }).toJSDate(),
   userId: 'id',
@@ -44,4 +44,15 @@ const mockJwtPayload: JwtPayload = {
   sub: 'id',
 };
 
-export { mockToken, mockDeleteResult, mockUser, mockJwtPayload };
+const mockRefreshTokenPayload: RefreshTokenPayload = {
+  ...mockRefreshToken,
+  accessToken: 'accessToken',
+};
+
+export {
+  mockRefreshToken,
+  mockDeleteResult,
+  mockUser,
+  mockJwtPayload,
+  mockRefreshTokenPayload,
+};

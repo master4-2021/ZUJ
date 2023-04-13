@@ -8,6 +8,7 @@ import { LocalAuthGuard } from './guards/local';
 import { ValidatedUser } from './types';
 import { RefreshTokenEntity } from '../entities/refreshToken/refreshToken.entity';
 import { UserEntity } from '../entities/user/user.entity';
+import { RefreshTokenPayload } from '../entities/refreshToken/types';
 
 @Controller('auth')
 export class AuthController {
@@ -18,7 +19,7 @@ export class AuthController {
   @Post('login')
   async login(
     @AuthorizedUser() user: ValidatedUser,
-  ): Promise<RefreshTokenEntity> {
+  ): Promise<RefreshTokenPayload> {
     return this.authService.login(user);
   }
 

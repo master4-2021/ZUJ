@@ -1,38 +1,46 @@
 import { ConfigService } from '@nestjs/config';
-import { TokenService } from '../../src/modules/entities/refreshToken/refreshToken.service';
+import { RefreshTokenService } from '../../src/modules/entities/refreshToken/refreshToken.service';
 import { ValidatedUser } from '../../src/modules/auth/types';
 import { mockValidatedUser } from '../mock/input.mock';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JWT_TOKEN, REFRESH_JWT_TOKEN } from '../../src/common/constants';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { TokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
+import { RefreshTokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
 import mockRepository from '../mock/repository.mock';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
-import { mockJwtPayload, mockToken } from '../mock/output.mock';
-import { TokenJwtModule } from '../../src/modules/jwt/token.jwt.module';
-import { RefreshTokenJwtModule } from '../../src/modules/jwt/refreshToken.jwt.module';
+import {
+  mockJwtPayload,
+  mockRefreshToken,
+  mockRefreshTokenPayload,
+} from '../mock/output.mock';
 import mockJwtService from '../mock/jwtService.mock';
+import { RefreshTokenPayload } from '../../src/modules/entities/refreshToken/types';
+import { DateTime } from 'luxon';
 
 const moduleMocker = new ModuleMocker(global);
 
-describe('TokenService', () => {
-  let tokenService: TokenService;
+describe('RefreshTokenService', () => {
+  let refreshTokenService: RefreshTokenService;
   let configService: ConfigService;
+
   let validatedUser: ValidatedUser;
-  let refreshToken: string;
-  let token: TokenEntity;
+  let refreshToken: RefreshTokenEntity;
+  let refreshTokenPayload: RefreshTokenPayload;
 
   beforeEach(async () => {
     validatedUser = mockValidatedUser;
-    refreshToken = 'refreshToken';
-    token = mockToken;
+    refreshToken = mockRefreshToken;
+    refreshTokenPayload = mockRefreshTokenPayload;
 
     const app: TestingModule = await Test.createTestingModule({
       providers: [
-        TokenService,
+        RefreshTokenService,
         { provide: JWT_TOKEN, useValue: mockJwtService },
         { provide: REFRESH_JWT_TOKEN, useValue: mockJwtService },
-        { provide: getRepositoryToken(TokenEntity), useValue: mockRepository },
+        {
+          provide: getRepositoryToken(RefreshTokenEntity),
+          useValue: mockRepository,
+        },
       ],
     })
       .useMocker((target) => {
@@ -46,33 +54,42 @@ describe('TokenService', () => {
       })
       .compile();
 
-    tokenService = app.get<TokenService>(TokenService);
+    refreshTokenService = app.get<RefreshTokenService>(RefreshTokenService);
     configService = app.get<ConfigService>(ConfigService);
   });
 
   describe('refresh', () => {
     it('should return updated token record', async () => {
-      const updatedToken = { ...token, accessToken: 'token' };
-      jest.spyOn(tokenService, 'findOne').mockResolvedValue(token);
-      jest.spyOn(tokenService, 'updateById').mockResolvedValue(updatedToken);
+      const updatedRefreshToken = {
+        ...refreshToken,
+        refreshExpiresIn: DateTime.now().plus({ days: 30 }),
+      };
+      jest
+        .spyOn(refreshTokenService, 'findOne')
+        .mockResolvedValue(refreshToken);
+      jest
+        .spyOn(refreshTokenService, 'updateById')
+        .mockResolvedValue(updatedRefreshToken);
       jest
         .spyOn(mockJwtService, 'verifyAsync')
         .mockResolvedValue(mockJwtPayload);
       jest
         .spyOn(mockJwtService, 'sign')
-        .mockReturnValue(updatedToken.accessToken);
+        .mockReturnValue(refreshTokenPayload.accessToken);
 
-      expect(await tokenService.refresh(refreshToken)).toEqual(updatedToken);
+      expect(
+        await refreshTokenService.refresh(refreshToken.refreshToken),
+      ).toEqual(updatedToken);
 
       expect(mockJwtService.verifyAsync).toHaveBeenCalledWith(refreshToken);
 
-      expect(tokenService.findOne).toHaveBeenCalledWith({
+      expect(refreshTokenService.findOne).toHaveBeenCalledWith({
         where: { userId: mockJwtPayload.sub },
       });
 
       expect(mockJwtService.sign).toHaveBeenCalledWith(mockJwtPayload);
 
-      expect(tokenService.updateById).toHaveBeenCalledWith(token.id, {
+      expect(refreshTokenService.updateById).toHaveBeenCalledWith(token.id, {
         accessToken: updatedToken.accessToken,
       });
     });
@@ -80,7 +97,9 @@ describe('TokenService', () => {
     it('should throw error if refresh token expired', async () => {
       jest.spyOn(mockJwtService, 'verifyAsync').mockRejectedValue('error');
 
-      await expect(tokenService.refresh(refreshToken)).rejects.toThrow('error');
+      await expect(refreshTokenService.refresh(refreshToken)).rejects.toThrow(
+        'error',
+      );
 
       expect(mockJwtService.verifyAsync).toHaveBeenCalledWith(refreshToken);
     });

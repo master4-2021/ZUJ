@@ -1,13 +1,16 @@
 import { TestingModule, Test } from '@nestjs/testing';
-import { DeleteResult } from 'typeorm';
 import { RegisterDto } from '../../src/modules/auth/auth.dto';
 import { AuthService } from '../../src/modules/auth/auth.service';
 import { ValidatedUser } from '../../src/modules/auth/types';
-import { TokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
+import { RefreshTokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
 import { UserEntity } from '../../src/modules/entities/user/user.entity';
-import { mockUser, mockToken, mockDeleteResult } from '../mock/output.mock';
+import {
+  mockUser,
+  mockRefreshToken,
+  mockRefreshTokenPayload,
+} from '../mock/output.mock';
 import { UserService } from '../../src/modules/entities/user/user.service';
-import { TokenService } from '../../src/modules/entities/refreshToken/refreshToken.service';
+import { RefreshTokenService } from '../../src/modules/entities/refreshToken/refreshToken.service';
 import { EncryptionAndHashService } from '../../src/modules/encryptionAndHash/encrypttionAndHash.service';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
 import { mockRegisterDto, mockValidatedUser } from '../mock/input.mock';
@@ -19,27 +22,28 @@ import {
 } from '../../src/common/constants/errors';
 import { Role } from '../../src/common/decorators/roles';
 import { BusinessException } from '../../src/common/exceptions';
+import { RefreshTokenPayload } from '../../src/modules/entities/refreshToken/types';
 
 const moduleMocker = new ModuleMocker(global);
 
 describe('AuthService', () => {
   let registerDto: RegisterDto;
   let user: UserEntity;
-  let token: TokenEntity;
-  let deleteResult: DeleteResult;
+  let refreshToken: RefreshTokenEntity;
   let validatedUser: ValidatedUser;
+  let refreshTokenPayload: RefreshTokenPayload;
 
   let authService: AuthService;
   let encryptionAndHashService: EncryptionAndHashService;
   let userService: UserService;
-  let tokenService: TokenService;
+  let refreshTokenService: RefreshTokenService;
 
   beforeEach(async () => {
     registerDto = mockRegisterDto;
     user = mockUser;
-    token = mockToken;
+    refreshToken = mockRefreshToken;
     validatedUser = mockValidatedUser;
-    deleteResult = mockDeleteResult;
+    refreshTokenPayload = mockRefreshTokenPayload;
 
     const app: TestingModule = await Test.createTestingModule({
       providers: [AuthService],
@@ -52,11 +56,10 @@ describe('AuthService', () => {
           };
         }
 
-        if (target === TokenService) {
+        if (target === RefreshTokenService) {
           return {
-            verifyAccessToken: jest.fn().mockResolvedValue(true),
-            createToken: jest.fn().mockResolvedValue(token),
-            revoke: jest.fn().mockResolvedValue(deleteResult),
+            createToken: jest.fn().mockResolvedValue(mockRefreshTokenPayload),
+            revoke: jest.fn().mockResolvedValue(refreshToken),
           };
         }
 
@@ -82,7 +85,7 @@ describe('AuthService', () => {
       EncryptionAndHashService,
     );
     userService = app.get<UserService>(UserService);
-    tokenService = app.get<TokenService>(TokenService);
+    refreshTokenService = app.get<RefreshTokenService>(RefreshTokenService);
   });
 
   describe('validateUser', () => {
@@ -99,7 +102,6 @@ describe('AuthService', () => {
         where: { username: input.username },
       });
 
-      expect(encryptionAndHashService.compare).toHaveBeenCalledTimes(1);
       expect(encryptionAndHashService.compare).toHaveBeenCalledWith(
         input.password,
         user.password,
@@ -144,37 +146,21 @@ describe('AuthService', () => {
     });
   });
 
-  describe('validateAccessToken', () => {
-    const accessToken = 'accessToken';
-
-    it('should return true', async () => {
-      expect(await authService.validateAccessToken(accessToken)).toBeTruthy();
-
-      expect(tokenService.verifyAccessToken).toHaveBeenCalledWith(accessToken);
-    });
-
-    it('should return false', async () => {
-      jest.spyOn(tokenService, 'verifyAccessToken').mockResolvedValue(false);
-
-      expect(await authService.validateAccessToken(accessToken)).toBeFalsy();
-
-      expect(tokenService.verifyAccessToken).toHaveBeenCalledWith(accessToken);
-    });
-  });
-
   describe('login', () => {
     it('should return token when login', async () => {
-      expect(await authService.login(validatedUser)).toBe(token);
+      expect(await authService.login(validatedUser)).toBe(refreshTokenPayload);
 
-      expect(tokenService.createToken).toHaveBeenCalledWith(validatedUser);
+      expect(refreshTokenService.createToken).toHaveBeenCalledWith(
+        validatedUser,
+      );
     });
   });
 
   describe('logout', () => {
     it('should return deleteResult when logout', async () => {
-      expect(await authService.logout(user.id)).toBe(deleteResult);
+      expect(await authService.logout(user.id)).toBe(refreshToken);
 
-      expect(tokenService.revoke).toHaveBeenCalledWith(user.id);
+      expect(refreshTokenService.revoke).toHaveBeenCalledWith(user.id);
     });
   });
 
@@ -224,6 +210,8 @@ describe('AuthService', () => {
       });
 
       expect(encryptionAndHashService.hash).not.toHaveBeenCalled();
+
+      expect(userService.save).not.toHaveBeenCalled();
     });
   });
 });

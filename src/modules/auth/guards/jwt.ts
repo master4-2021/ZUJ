@@ -10,14 +10,10 @@ import {
   UNAUTHORIZED,
 } from '../../../common/constants/errors';
 import { PUBLIC_KEY } from '../../../common/decorators/public';
-import { AuthService } from '../auth.service';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly authService: AuthService,
-  ) {
+  constructor(private readonly reflector: Reflector) {
     super();
   }
 
@@ -33,12 +29,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (!accessToken) {
       throw new UnauthorizedException(
         UNAUTHORIZED.messages[ErrorMessageEnum.accessTokenIsMissing],
-      );
-    }
-    const isStored = await this.authService.validateAccessToken(accessToken);
-    if (!isStored) {
-      throw new UnauthorizedException(
-        UNAUTHORIZED.messages[ErrorMessageEnum.invalidAccessToken],
       );
     }
 

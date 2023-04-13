@@ -3,7 +3,7 @@ import { LoginDto, RegisterDto } from '../../src/modules/auth/auth.dto';
 import { ValidatedUser } from '../../src/modules/auth/types';
 import {
   RefreshTokenDto,
-  RevokeTokenDto,
+  RevokeRefreshTokenDto,
 } from '../../src/modules/entities/refreshToken/refreshToken.dto';
 import { ChangePasswordDto } from '../../src/modules/entities/user/user.dto';
 
@@ -29,7 +29,7 @@ const mockRefreshTokenDto: RefreshTokenDto = {
   refreshToken: 'refreshToken',
 };
 
-const mockRevokeTokenDto: RevokeTokenDto = {
+const mockRevokeTokenDto: RevokeRefreshTokenDto = {
   userId: 'id',
 };
 
