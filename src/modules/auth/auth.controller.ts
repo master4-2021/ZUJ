@@ -6,9 +6,8 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt';
 import { LocalAuthGuard } from './guards/local';
 import { ValidatedUser } from './types';
-import { TokenEntity } from '../entities/token/token.entity';
+import { RefreshTokenEntity } from '../entities/refreshToken/refreshToken.entity';
 import { UserEntity } from '../entities/user/user.entity';
-import { DeleteResult } from 'typeorm';
 
 @Controller('auth')
 export class AuthController {
@@ -17,7 +16,9 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Public()
   @Post('login')
-  async login(@AuthorizedUser() user: ValidatedUser): Promise<TokenEntity> {
+  async login(
+    @AuthorizedUser() user: ValidatedUser,
+  ): Promise<RefreshTokenEntity> {
     return this.authService.login(user);
   }
 
@@ -29,7 +30,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@AuthorizedUser() user: ValidatedUser): Promise<DeleteResult> {
+  async logout(
+    @AuthorizedUser() user: ValidatedUser,
+  ): Promise<RefreshTokenEntity> {
     return this.authService.logout(user.userId);
   }
 }

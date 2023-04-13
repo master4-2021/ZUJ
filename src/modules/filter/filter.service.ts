@@ -14,10 +14,7 @@ import {
   MoreThanOrEqual,
   Not,
 } from 'typeorm';
-import {
-  ErrorMessageEnum,
-  INVALID_FILTER_QUERY,
-} from '../../common/constants/errors';
+import { BAD_REQUEST, ErrorMessageEnum } from '../../common/constants/errors';
 import { BusinessException } from '../../common/exceptions';
 import { LoggerService } from '../logger/logger.service';
 import {
@@ -66,10 +63,7 @@ export class FilterService {
         error,
         FilterService.name,
       );
-      throw new BusinessException(
-        INVALID_FILTER_QUERY,
-        ErrorMessageEnum.invalidFilter,
-      );
+      throw new BusinessException(BAD_REQUEST, ErrorMessageEnum.invalidFilter);
     }
   }
 

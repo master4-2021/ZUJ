@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { BaseService } from '../../base/base.service';
-import { LoggerService } from '../../logger/logger.service';
 import { And, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FixtureEntity } from './fixture.entity';
 import { BusinessException } from '../../../common/exceptions';
 import {
+  BAD_REQUEST,
   ErrorMessageEnum,
-  INVALID_FILTER_QUERY,
 } from '../../../common/constants/errors';
 
 import { DateTime } from 'luxon';
@@ -15,13 +14,12 @@ import { CalendarQuery } from './types';
 import { ParsedFilterQuery } from '../../filter/types';
 
 @Injectable()
-export class FixtureService extends BaseService<LoggerService, FixtureEntity> {
+export class FixtureService extends BaseService<FixtureEntity> {
   constructor(
     @InjectRepository(FixtureEntity)
     private readonly fixtureRepository: Repository<FixtureEntity>,
-    logger: LoggerService,
   ) {
-    super(fixtureRepository, logger);
+    super(fixtureRepository);
   }
 
   async getFixtures(
@@ -41,14 +39,11 @@ export class FixtureService extends BaseService<LoggerService, FixtureEntity> {
       ? DateTime.fromISO(query.to)
       : DateTime.now().endOf('month');
     if (!gte.isValid || !lte.isValid) {
-      throw new BusinessException(
-        INVALID_FILTER_QUERY,
-        ErrorMessageEnum.invalidFilter,
-      );
+      throw new BusinessException(BAD_REQUEST, ErrorMessageEnum.invalidFilter);
     }
     if (gte > lte) {
       throw new BusinessException(
-        INVALID_FILTER_QUERY,
+        BAD_REQUEST,
         ErrorMessageEnum.startDateGreaterThanEndDate,
       );
     }

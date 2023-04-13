@@ -20,6 +20,8 @@ export enum ErrorMessageEnum {
   userNamePasswordMissing = 'userNamePasswordMissing',
   functionError = 'functionError',
   startDateGreaterThanEndDate = 'startDateGreaterThanEndDate',
+  oldPasswordEqualNewPassword = 'oldPasswordEqualNewPassword',
+  entityNotFound = 'entityNotFound',
 }
 
 const VALIDATION_ERROR = (errs: ValidationError[]): GenericError => {
@@ -48,6 +50,35 @@ const SERVICE_UNAVAILABLE_ERROR: GenericError = {
     serviceUnavailable: 'Service unavailable',
   },
 };
+const NOT_FOUND: GenericError = {
+  code: 'NOT_FOUND',
+  statusCode: HttpStatus.NOT_FOUND,
+  messages: {
+    userNotFound: 'User not found',
+    crudNotFound: 'Crud not found',
+    entityNotFound: 'Entity not found',
+  },
+};
+const BAD_REQUEST: GenericError = {
+  code: 'BAD_REQUEST',
+  statusCode: HttpStatus.BAD_REQUEST,
+  messages: {
+    invalidFilter: 'Invalid filter query',
+    startDateGreaterThanEndDate: 'Start date greater than end date',
+    invalidRefreshToken: 'Invalid refresh token',
+    refreshTokenExpired: 'Refresh token expired',
+    oldPasswordEqualNewPassword: 'Old password equal new password',
+    invalidOldPassword: 'Invalid old password',
+  },
+};
+const CONFLICT_ERROR: GenericError = {
+  code: 'CONFLICT_ERROR',
+  statusCode: HttpStatus.CONFLICT,
+  messages: {
+    userExisted: 'User existed',
+    crudExisted: 'Crud existed',
+  },
+};
 const FUNCTION_ERROR: GenericError = {
   code: 'FUNCTION_ERROR',
   statusCode: NaN,
@@ -55,12 +86,11 @@ const FUNCTION_ERROR: GenericError = {
     functionError: 'Function error',
   },
 };
-const INVALID_FILTER_QUERY: GenericError = {
-  code: 'INVALID_FILTER_QUERY',
-  statusCode: HttpStatus.BAD_REQUEST,
+const FORBIDDEN: GenericError = {
+  code: 'FORBIDDEN',
+  statusCode: HttpStatus.FORBIDDEN,
   messages: {
-    invalidFilter: 'Invalid filter query',
-    startDateGreaterThanEndDate: 'Start date greater than end date',
+    forbidden: 'Forbidden',
   },
 };
 const UNAUTHORIZED: GenericError = {
@@ -72,65 +102,18 @@ const UNAUTHORIZED: GenericError = {
     invalidAccessToken: 'Invalid access token',
     accessTokenExpired: 'Access token expired',
     userNotFound: 'User not found',
-    invalidOldPassword: 'Invalid old password',
     userNamePasswordMissing: 'Username or password is missing',
-  },
-};
-const REFRESH_TOKEN_ERROR: GenericError = {
-  code: 'REFRESH_TOKEN_ERROR',
-  statusCode: HttpStatus.BAD_REQUEST,
-  messages: {
-    invalidRefreshToken: 'Invalid refresh token',
-    refreshTokenExpired: 'Refresh token expired',
-  },
-};
-const FORBIDDEN: GenericError = {
-  code: 'FORBIDDEN',
-  statusCode: HttpStatus.FORBIDDEN,
-  messages: {
-    forbidden: 'Forbidden',
-  },
-};
-const USER_NOT_FOUND: GenericError = {
-  code: 'USER_NOT_FOUND',
-  statusCode: HttpStatus.NOT_FOUND,
-  messages: {
-    userNotFound: 'User not found',
-  },
-};
-const USER_EXISTED: GenericError = {
-  code: 'USER_EXISTED',
-  statusCode: HttpStatus.CONFLICT,
-  messages: {
-    userExisted: 'User existed',
-  },
-};
-const CRUD_NOT_FOUND: GenericError = {
-  code: 'CRUD_NOT_FOUND',
-  statusCode: HttpStatus.NOT_FOUND,
-  messages: {
-    crudNotFound: 'Crud not found',
-  },
-};
-const CRUD_EXISTED: GenericError = {
-  code: 'CRUD_EXISTED',
-  statusCode: HttpStatus.CONFLICT,
-  messages: {
-    crudExisted: 'Crud existed',
   },
 };
 
 export {
   VALIDATION_ERROR,
   INTERNAL_SERVER_ERROR,
-  INVALID_FILTER_QUERY,
   UNAUTHORIZED,
   FORBIDDEN,
-  USER_NOT_FOUND,
-  USER_EXISTED,
-  CRUD_NOT_FOUND,
-  CRUD_EXISTED,
   FUNCTION_ERROR,
-  REFRESH_TOKEN_ERROR,
   SERVICE_UNAVAILABLE_ERROR,
+  NOT_FOUND,
+  BAD_REQUEST,
+  CONFLICT_ERROR,
 };

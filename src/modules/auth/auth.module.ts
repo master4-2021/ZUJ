@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../entities/user/user.module';
 import { LocalStrategy } from './strategies/localStrategy';
 import { JwtStrategy } from './strategies/jwtStrategy';
-import { TokenModule } from '../entities/token/token.module';
+import { RefreshTokenModule } from '../entities/refreshToken/refreshToken.module';
 import { EncryptionAndHashModule } from '../encryptionAndHash/encryptionAndHash.module';
 import { AuthController } from './auth.controller';
 import { TokenJwtModule } from '../jwt/token.jwt.module';
@@ -16,7 +16,7 @@ import { RoleGuard } from './guards/role';
   imports: [
     UserModule,
     PassportModule,
-    TokenModule,
+    RefreshTokenModule,
     TokenJwtModule,
     EncryptionAndHashModule,
   ],

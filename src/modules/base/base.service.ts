@@ -7,18 +7,13 @@ import {
   Repository,
 } from 'typeorm';
 import { ParsedFilterQuery } from '../filter/types';
-import { LoggerService } from '../logger/logger.service';
 import { BaseEntity } from './base.entity';
+import { BusinessException } from '../../common/exceptions';
+import { ErrorMessageEnum, NOT_FOUND } from '../../common/constants/errors';
 
 @Injectable()
-export abstract class BaseService<
-  L extends LoggerService,
-  T extends BaseEntity,
-> {
-  protected constructor(
-    protected readonly repository: Repository<T>,
-    protected readonly logger: L,
-  ) {}
+export abstract class BaseService<T extends BaseEntity> {
+  protected constructor(protected readonly repository: Repository<T>) {}
 
   async count(filterQuery: ParsedFilterQuery<T> = {}): Promise<number> {
     return await this.repository.count({
@@ -89,7 +84,7 @@ export abstract class BaseService<
   ): Promise<T> {
     const entity = await this.findOne(filterQuery);
     if (!entity) {
-      return undefined;
+      throw new BusinessException(NOT_FOUND, ErrorMessageEnum.entityNotFound);
     }
     return await this.save({
       ...entity,
@@ -100,7 +95,7 @@ export abstract class BaseService<
   async updateById(id: string, updateDto: Partial<T>): Promise<T> {
     const entity = await this.findById(id);
     if (!entity) {
-      return undefined;
+      throw new BusinessException(NOT_FOUND, ErrorMessageEnum.entityNotFound);
     }
     return await this.save({
       ...entity,

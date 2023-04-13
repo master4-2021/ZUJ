@@ -1,19 +1,14 @@
 import { TestingModule, Test } from '@nestjs/testing';
-import { TokenEntity } from '../../src/modules/entities/token/token.entity';
+import { TokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
 import { UserEntity } from '../../src/modules/entities/user/user.entity';
 import { AuthController } from '../../src/modules/auth/auth.controller';
 import { RegisterDto } from '../../src/modules/auth/auth.dto';
 import { AuthService } from '../../src/modules/auth/auth.service';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
-import {
-  mockDeleteResult,
-  mockRegisterDto,
-  mockToken,
-  mockUser,
-  mockValidatedUser,
-} from '../mock/data.mock';
+import { mockDeleteResult, mockToken, mockUser } from '../mock/output.mock';
 import { ValidatedUser } from '../../src/modules/auth/types';
 import { DeleteResult } from 'typeorm';
+import { mockRegisterDto, mockValidatedUser } from '../mock/input.mock';
 
 const moduleMocker = new ModuleMocker(global);
 

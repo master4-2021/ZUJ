@@ -1,25 +1,26 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { DeleteResult, FindOptionsWhere } from 'typeorm';
+import { FindOptionsWhere } from 'typeorm';
 import {
+  CONFLICT_ERROR,
   ErrorMessageEnum,
   UNAUTHORIZED,
-  USER_EXISTED,
 } from '../../common/constants/errors';
 import { Role } from '../../common/decorators/roles';
 import { BusinessException } from '../../common/exceptions';
 import { EncryptionAndHashService } from '../encryptionAndHash/encrypttionAndHash.service';
-import { TokenEntity } from '../entities/token/token.entity';
-import { TokenService } from '../entities/token/token.service';
+import { RefreshTokenEntity } from '../entities/refreshToken/refreshToken.entity';
+import { RefreshTokenService } from '../entities/refreshToken/refreshToken.service';
 import { UserEntity } from '../entities/user/user.entity';
 import { UserService } from '../entities/user/user.service';
 import { RegisterDto } from './auth.dto';
 import { ValidatedUser } from './types';
+import { RefreshTokenPayload } from '../entities/refreshToken/types';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UserService,
-    private readonly tokenService: TokenService,
+    private readonly refreshTokenService: RefreshTokenService,
     private readonly encryptionAndHashService: EncryptionAndHashService,
   ) {}
 
@@ -50,16 +51,12 @@ export class AuthService {
     };
   }
 
-  async validateAccessToken(accessToken: string): Promise<boolean> {
-    return this.tokenService.verifyAccessToken(accessToken);
+  async login(validatedUser: ValidatedUser): Promise<RefreshTokenPayload> {
+    return await this.refreshTokenService.createToken(validatedUser);
   }
 
-  async login(loginDto: ValidatedUser): Promise<TokenEntity> {
-    return await this.tokenService.createToken(loginDto);
-  }
-
-  async logout(userId: string): Promise<DeleteResult> {
-    return await this.tokenService.revoke(userId);
+  async logout(userId: string): Promise<RefreshTokenEntity> {
+    return await this.refreshTokenService.revoke(userId);
   }
 
   async register(registerDto: RegisterDto): Promise<UserEntity> {
@@ -70,7 +67,7 @@ export class AuthService {
     }
     const user = await this.usersService.findOne({ where });
     if (user) {
-      throw new BusinessException(USER_EXISTED, ErrorMessageEnum.userExisted);
+      throw new BusinessException(CONFLICT_ERROR, ErrorMessageEnum.userExisted);
     }
     const hashedPassword = await this.encryptionAndHashService.hash(password);
 

@@ -6,7 +6,7 @@ export class RefreshTokenDto {
   refreshToken: string;
 }
 
-export class RevokeTokenDto {
+export class RevokeRefreshTokenDto {
   @IsString()
   @IsNotEmpty()
   userId: string;

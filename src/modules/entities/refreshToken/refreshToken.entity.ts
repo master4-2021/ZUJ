@@ -3,14 +3,11 @@ import { BaseEntity } from '../../base/base.entity';
 import { UserEntity } from '../user/user.entity';
 
 @Entity('token')
-export class TokenEntity extends BaseEntity {
-  @Column()
-  accessToken: string;
-
+export class RefreshTokenEntity extends BaseEntity {
   @Column()
   refreshToken: string;
 
-  @Column()
+  @Column({ unique: true })
   userId: string;
 
   @Column()

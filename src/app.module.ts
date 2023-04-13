@@ -10,7 +10,7 @@ import { ErrorFilter } from './common/filters/error';
 import { CorrelationIdMiddleware } from './common/middlewares/correlationId';
 import { ConfigModule } from './modules/config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { TokenModule } from './modules/entities/token/token.module';
+import { RefreshTokenModule } from './modules/entities/refreshToken/refreshToken.module';
 import { UserModule } from './modules/entities/user/user.module';
 import { TokenJwtModule } from './modules/jwt/token.jwt.module';
 import { RefreshTokenJwtModule } from './modules/jwt/refreshToken.jwt.module';
@@ -41,7 +41,7 @@ import { FilterQueryMiddleware } from './common/middlewares/filterQuery';
     RefreshTokenJwtModule,
     UserModule,
     AuthModule,
-    TokenModule,
+    RefreshTokenModule,
     EncryptionAndHashModule,
     LoggerModule,
     FilterModule,

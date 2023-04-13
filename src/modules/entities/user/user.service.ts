@@ -2,25 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
+  BAD_REQUEST,
   ErrorMessageEnum,
   UNAUTHORIZED,
 } from '../../../common/constants/errors';
 import { BusinessException } from '../../../common/exceptions';
 import { BaseService } from '../../base/base.service';
 import { EncryptionAndHashService } from '../../encryptionAndHash/encrypttionAndHash.service';
-import { LoggerService } from '../../logger/logger.service';
 import { ChangePasswordDto } from './user.dto';
 import { UserEntity } from './user.entity';
 
 @Injectable()
-export class UserService extends BaseService<LoggerService, UserEntity> {
+export class UserService extends BaseService<UserEntity> {
   constructor(
-    logger: LoggerService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly encryptionAndHashService: EncryptionAndHashService,
   ) {
-    super(userRepository, logger);
+    super(userRepository);
   }
 
   async changePassword(
@@ -35,17 +34,21 @@ export class UserService extends BaseService<LoggerService, UserEntity> {
 
     const { oldPassword, newPassword } = changePasswordDto;
 
-    const oldPasswordHash = await this.encryptionAndHashService.hash(
-      oldPassword,
-    );
+    if (oldPassword === newPassword) {
+      throw new BusinessException(
+        BAD_REQUEST,
+        ErrorMessageEnum.oldPasswordEqualNewPassword,
+      );
+    }
+
     const isOldPasswordValid = await this.encryptionAndHashService.compare(
-      oldPasswordHash,
+      changePasswordDto.oldPassword,
       user.password,
     );
 
     if (!isOldPasswordValid) {
       throw new BusinessException(
-        UNAUTHORIZED,
+        BAD_REQUEST,
         ErrorMessageEnum.invalidOldPassword,
       );
     }
