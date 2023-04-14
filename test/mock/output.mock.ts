@@ -10,7 +10,7 @@ import { RefreshTokenPayload } from '../../src/modules/entities/refreshToken/typ
 
 const mockRefreshToken: RefreshTokenEntity = {
   id: 'id',
-  refreshToken: 'refreshToken',
+  refreshToken: 'encryptedRefreshToken',
   refreshExpiresIn: DateTime.now().plus({ days: 30 }).toJSDate(),
   userId: 'id',
   user: {
@@ -46,6 +46,7 @@ const mockJwtPayload: JwtPayload = {
 
 const mockRefreshTokenPayload: RefreshTokenPayload = {
   ...mockRefreshToken,
+  refreshToken: 'refreshToken',
   accessToken: 'accessToken',
 };
 
