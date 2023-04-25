@@ -12,7 +12,7 @@ import { DateTime } from 'luxon';
 
 const moduleMocker = new ModuleMocker(global);
 
-describe.only('FilterService', () => {
+describe('FilterService', () => {
   let filterService: FilterService;
 
   let filterQuery: FilterRequestQuery;
