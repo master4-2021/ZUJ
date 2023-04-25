@@ -50,7 +50,7 @@ export class FixtureService extends BaseService<FixtureEntity> {
     filter.relations = { tournament: true, home: true, away: true };
     filter.order = { kickoffTime: 'ASC' };
 
-    return this.fixtureRepository.find(filter);
+    return this.find(filter);
   }
 
   async getFixtureCalendar(
@@ -74,18 +74,20 @@ export class FixtureService extends BaseService<FixtureEntity> {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const fixtures = await this.fixtureRepository.find({
-      where: {
-        kickoffTime: And(
-          MoreThanOrEqual(gte.toJSDate()),
-          LessThanOrEqual(lte.toJSDate()),
-        ),
-      },
+    const fixtures = await this.find({
+      where: [
+        {
+          kickoffTime: And(
+            MoreThanOrEqual(gte.toJSDate()),
+            LessThanOrEqual(lte.toJSDate()),
+          ),
+        },
+      ],
       order: {
         kickoffTime: 'ASC',
       },
     });
     const dates = fixtures.map((fixture) => fixture.kickoffTime);
-    return dates.map((date) => date.toISOString());
+    return dates.map((date) => DateTime.fromJSDate(date).toISO());
   }
 }

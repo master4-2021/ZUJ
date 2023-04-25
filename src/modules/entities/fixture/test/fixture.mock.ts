@@ -2,6 +2,7 @@ import { DateTime } from 'luxon';
 import {
   CalendarQuery,
   FixtureCarendarPayload,
+  FixturePayload,
   FixtureStatus,
 } from '../fixture.types';
 import { ParsedFilterQuery } from '../../../filter/types';
@@ -20,6 +21,41 @@ const mockFixtureCalendarQuery: CalendarQuery = {
     second: 59,
   }).toISO(),
 };
+
+const mockFixturesWithKickoffTime: Partial<FixtureEntity>[] = [
+  {
+    kickoffTime: DateTime.fromObject({
+      year: 2023,
+      month: 4,
+      day: 1,
+      hour: 0,
+    }).toJSDate(),
+  },
+  {
+    kickoffTime: DateTime.fromObject({
+      year: 2023,
+      month: 4,
+      day: 2,
+      hour: 0,
+    }).toJSDate(),
+  },
+  {
+    kickoffTime: DateTime.fromObject({
+      year: 2023,
+      month: 4,
+      day: 3,
+      hour: 0,
+    }).toJSDate(),
+  },
+  {
+    kickoffTime: DateTime.fromObject({
+      year: 2023,
+      month: 4,
+      day: 4,
+      hour: 0,
+    }).toJSDate(),
+  },
+];
 
 const mockFixtureCalendarPayload: FixtureCarendarPayload = [
   DateTime.fromObject({ year: 2023, month: 4, day: 1, hour: 0 }).toISO(),
@@ -41,7 +77,7 @@ const mockFixtureFilter: ParsedFilterQuery<FixtureEntity> = {
   order: { kickoffTime: 'ASC' },
 };
 
-const mockFixturePayload: FixtureEntity[] = [
+const mockFixturePayload: FixturePayload[] = [
   {
     id: '05fc8950-41e5-4ed0-aac7-db8eaddc53c4',
     createdAt: DateTime.now().toJSDate(),
@@ -131,4 +167,5 @@ export {
   mockFixtureCalendarPayload,
   mockFixtureFilter,
   mockFixturePayload,
+  mockFixturesWithKickoffTime,
 };

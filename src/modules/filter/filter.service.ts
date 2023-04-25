@@ -40,7 +40,7 @@ export class FilterService {
     [FilterOperatorEnum.GTE]: (value: FilterValue) => MoreThanOrEqual(value),
     [FilterOperatorEnum.LT]: (value: FilterValue) => LessThan(value),
     [FilterOperatorEnum.LTE]: (value: FilterValue) => LessThanOrEqual(value),
-    [FilterOperatorEnum.LIKE]: (value: FilterValue) => Like(value),
+    [FilterOperatorEnum.LIKE]: (value: FilterValue) => Like(`%${value}%`),
   };
 
   constructor(private readonly logger: LoggerService) {}
@@ -64,7 +64,7 @@ export class FilterService {
       if (query.limit) {
         parsedFilterQuery.take = query.limit;
       }
-      if (query.skip) {
+      if (!isNaN(query.skip)) {
         parsedFilterQuery.skip = query.skip;
       }
       return parsedFilterQuery;
@@ -99,7 +99,9 @@ export class FilterService {
     const parsedOperators: FindOperator<FilterValue>[] = [];
     operatorKeys.forEach((key) => {
       const value = operators[key];
-      parsedOperators.push(FilterService.parseOperatorsObject[key](value));
+      parsedOperators.push(
+        FilterService.parseOperatorsObject[key](getDateOrValue(value)),
+      );
     });
 
     return And(...parsedOperators);
@@ -115,7 +117,7 @@ export class FilterService {
           parsedBaseFilter,
           this.parseKeyValue(
             key,
-            And(this.convertOperators(filter[key] as FilterOperators)),
+            this.convertOperators(filter[key] as FilterOperators),
             false,
           ),
         );
@@ -142,11 +144,7 @@ export class FilterService {
         } else {
           Object.assign(
             parsedFilter,
-            this.parseKeyValue(
-              key,
-              And(this.convertOperators(filter[key])),
-              false,
-            ),
+            this.parseKeyValue(key, this.convertOperators(filter[key]), false),
           );
         }
       } else {
