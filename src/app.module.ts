@@ -1,4 +1,5 @@
 import {
+  HttpStatus,
   MiddlewareConsumer,
   Module,
   NestModule,
@@ -22,12 +23,10 @@ import { RoleGuard } from './modules/auth/guards/role';
 import { JwtAuthGuard } from './modules/auth/guards/jwt';
 import { LoggerModule } from './modules/logger/logger.module';
 import { ValidationError } from 'class-validator';
-import { VALIDATION_ERROR } from './common/constants/errors';
-import { BusinessException } from './common/exceptions';
+import { ValidationException } from './common/exceptions';
 import { FilterModule } from './modules/filter/filter.module';
 import { LoggingInterceptor } from './common/interceptors/logging';
 import { HealthModule } from './modules/health/health.module';
-import { AppController } from './app.controller';
 import { TournamentModule } from './modules/entities/tournament/tournament.module';
 import { ClubModule } from './modules/entities/club/club.module';
 import { FixtureModule } from './modules/entities/fixture/fixture.module';
@@ -77,11 +76,10 @@ import { FilterQueryMiddleware } from './common/middlewares/filterQuery';
         new ValidationPipe({
           transform: true,
           exceptionFactory: (errors: ValidationError[]) =>
-            new BusinessException(VALIDATION_ERROR(errors), null),
+            new ValidationException(errors, HttpStatus.BAD_REQUEST),
         }),
     },
   ],
-  controllers: [AppController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

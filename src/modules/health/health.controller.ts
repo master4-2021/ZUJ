@@ -32,7 +32,7 @@ export class HealthController {
           'Master4 app',
           `http://${this.configService.get<string>(
             'host',
-          )}:${this.configService.get<number>('port')}/api/ping`,
+          )}:${this.configService.get<number>('port')}/api/health/ping`,
         ),
       () => this.db.pingCheck('Postgres', { timeout: 1500 }),
       () =>
@@ -40,5 +40,11 @@ export class HealthController {
       () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
       () => this.memory.checkRSS('memory_rss', 150 * 1024 * 1024),
     ]);
+  }
+
+  @Get('ping')
+  @Public()
+  async ping(): Promise<string> {
+    return 'OK';
   }
 }

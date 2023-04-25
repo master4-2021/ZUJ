@@ -3,8 +3,7 @@ import { Public } from '../../../common/decorators/public';
 import { Role, Roles } from '../../../common/decorators/roles';
 import { RefreshTokenDto, RevokeRefreshTokenDto } from './refreshToken.dto';
 import { RefreshTokenService } from './refreshToken.service';
-import { RefreshTokenEntity } from './refreshToken.entity';
-import { RefreshTokenPayload } from './types';
+import { RefreshTokenPayload, RevokeTokenPayload } from './refreshToken.types';
 
 @Controller('token')
 export class RefreshTokenController {
@@ -22,7 +21,7 @@ export class RefreshTokenController {
   @Delete('revoke')
   async revokeToken(
     @Body() body: RevokeRefreshTokenDto,
-  ): Promise<RefreshTokenEntity> {
+  ): Promise<RevokeTokenPayload> {
     return await this.refreshTokenService.revoke(body.userId);
   }
 }

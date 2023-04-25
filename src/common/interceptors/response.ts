@@ -30,8 +30,8 @@ export class TransformResponseInterceptor implements NestInterceptor {
           correlationId: request.headers[CORRELATIONID] as string,
           timestamp: now,
           took: `${
-            DateTime.fromISO(now).millisecond -
-            DateTime.fromISO(request.headers[TIMESTAMPS] as string).millisecond
+            DateTime.fromISO(now).valueOf() -
+            DateTime.fromISO(request.headers[TIMESTAMPS] as string).valueOf()
           } ms`,
         };
       }),

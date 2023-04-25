@@ -4,7 +4,7 @@ import { UserEntity } from '../user/user.entity';
 
 @Entity('token')
 export class RefreshTokenEntity extends BaseEntity {
-  @Column()
+  @Column('longtext')
   refreshToken: string;
 
   @Column({ unique: true })
@@ -18,5 +18,5 @@ export class RefreshTokenEntity extends BaseEntity {
     name: 'userId',
     referencedColumnName: 'id',
   })
-  user: Partial<UserEntity>;
+  user?: Partial<UserEntity>;
 }

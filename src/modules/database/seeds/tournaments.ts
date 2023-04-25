@@ -1,6 +1,6 @@
-import { Region } from '../../../common/types';
 import { TournamentEntity } from '../../entities/tournament/tournament.entity';
 import { TournamentService } from '../../entities/tournament/tournament.service';
+import { Region } from '../../entities/tournament/tournament.types';
 
 const tournamentData: Partial<TournamentEntity>[] = [
   {

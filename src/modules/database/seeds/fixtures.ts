@@ -1,9 +1,10 @@
-import { FixtureStatus, Region } from '../../../common/types';
 import { promiseWhile } from '../../../utils/promiseWhile';
 import { ClubEntity } from '../../entities/club/club.entity';
 import { FixtureEntity } from '../../entities/fixture/fixture.entity';
 import { FixtureService } from '../../entities/fixture/fixture.service';
+import { FixtureStatus } from '../../entities/fixture/fixture.types';
 import { TournamentService } from '../../entities/tournament/tournament.service';
+import { Region } from '../../entities/tournament/tournament.types';
 
 const countryTournamentTimes = [
   {

@@ -1,27 +1,19 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorMessageEnum, INTERNAL_SERVER_ERROR } from './constants/errors';
-import { GenericError } from './types';
+import { ErrorMessageEnum, Message } from './types';
+import { messages } from './constants/errorMessages';
+import { ValidationError } from 'class-validator';
 
 export abstract class CustomException extends HttpException {
   isOperational: boolean;
   code: string;
   constructor(
-    error: GenericError,
-    selectedMessage: ErrorMessageEnum,
+    message: Message,
+    statusCode: HttpStatus,
     isOperational: boolean,
   ) {
-    const statusCode =
-      error.statusCode ||
-      (isOperational
-        ? HttpStatus.BAD_REQUEST
-        : HttpStatus.INTERNAL_SERVER_ERROR);
-    // if no selected message is provided, return all messages
-    const message = selectedMessage
-      ? error.messages[selectedMessage]
-      : error.messages;
-    super(message, statusCode);
+    super(message.content, statusCode);
     this.isOperational = isOperational;
-    this.code = error.code;
+    this.code = message.code;
 
     Object.setPrototypeOf(this, CustomException.prototype);
   }
@@ -33,30 +25,41 @@ export abstract class CustomException extends HttpException {
 
 export class BusinessException extends CustomException {
   constructor(
-    error: GenericError,
-    selectedMessage: ErrorMessageEnum,
+    message: ErrorMessageEnum,
+    statusCode: HttpStatus,
     isOperational = true,
   ) {
-    super(error, selectedMessage, isOperational);
+    super(messages[message], statusCode, isOperational);
   }
 }
 
 export class TechnicalException extends CustomException {
   constructor(
-    error: GenericError = INTERNAL_SERVER_ERROR,
-    selectedMessage = ErrorMessageEnum.internalServerError,
+    message: ErrorMessageEnum,
+    statusCode: HttpStatus,
     isOperational = false,
   ) {
-    super(error, selectedMessage, isOperational);
+    super(messages[message], statusCode, isOperational);
   }
 }
 
 export class FunctionException extends CustomException {
+  constructor(message: ErrorMessageEnum, isOperational = false) {
+    super(messages[message], NaN, isOperational);
+  }
+}
+
+export class ValidationException extends CustomException {
   constructor(
-    error: GenericError,
-    selectedMessage: ErrorMessageEnum,
+    errors: ValidationError[],
+    statusCode: HttpStatus,
     isOperational = false,
   ) {
-    super(error, selectedMessage, isOperational);
+    const message = messages[ErrorMessageEnum.validationError];
+    message.content = errors.reduce<Record<string, string[]>>((acc, err) => {
+      acc[err.property] = Object.values(err.constraints);
+      return acc;
+    }, {});
+    super(message, statusCode, isOperational);
   }
 }

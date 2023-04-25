@@ -1,5 +1,5 @@
-import { ErrorMessageEnum, FUNCTION_ERROR } from '../common/constants/errors';
 import { FunctionException } from '../common/exceptions';
+import { ErrorMessageEnum } from '../common/types';
 import { LoggerService } from '../modules/logger/logger.service';
 
 export async function logWrapper<T = any>(
@@ -19,6 +19,6 @@ export async function logWrapper<T = any>(
     return result;
   } catch (error) {
     logger.error_(`${action} failed!`, error, fn.name);
-    throw new FunctionException(FUNCTION_ERROR, ErrorMessageEnum.functionError);
+    throw new FunctionException(ErrorMessageEnum.functionError);
   }
 }

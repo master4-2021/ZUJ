@@ -5,9 +5,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ErrorMessageEnum, FORBIDDEN } from '../../../common/constants/errors';
 import { Role, ROLES_KEY } from '../../../common/decorators/roles';
-import { ValidatedUser } from '../types';
+import { ValidatedUser } from '../auth.types';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -29,9 +28,7 @@ export class RoleGuard implements CanActivate {
 
     const isCanActivate = requiredRoles.some((role) => role === user?.role);
     if (!isCanActivate) {
-      throw new ForbiddenException(
-        FORBIDDEN.messages[ErrorMessageEnum.forbidden],
-      );
+      throw new ForbiddenException();
     }
     return isCanActivate;
   }

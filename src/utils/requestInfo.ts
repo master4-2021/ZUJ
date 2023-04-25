@@ -1,13 +1,13 @@
 import { Request } from 'express';
-import hideOrRemoveField from './hideOrRemoveField';
 import { CORRELATIONID } from '../common/constants';
+import hideOrOmitDeep from './hideOrOmitFields';
 
 function getRequestInfo(request: Request) {
   return {
     method: request.method,
     url: request.url,
     query: request.query,
-    body: hideOrRemoveField(request.body, 'password'),
+    body: hideOrOmitDeep(request.body, ['password']),
     params: request.params,
     headers: request.headers,
     correlationId: request.headers[CORRELATIONID],

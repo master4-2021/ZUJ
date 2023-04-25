@@ -9,17 +9,11 @@ import {
 import { Request } from 'express';
 import { LoggerService } from '../../modules/logger/logger.service';
 import getRequestInfo from '../../utils/requestInfo';
-import { generateCode } from '../../utils/codeGenerator';
 import { API_CONTEXT, CORRELATIONID, TIMESTAMPS } from '../constants';
-import {
-  ErrorMessageEnum,
-  FORBIDDEN,
-  INTERNAL_SERVER_ERROR,
-  SERVICE_UNAVAILABLE_ERROR,
-  UNAUTHORIZED,
-} from '../constants/errors';
 import { CustomException } from '../exceptions';
 import { DateTime } from 'luxon';
+import { messages } from '../constants/errorMessages';
+import { Message } from '../types';
 
 @Catch()
 export class ErrorFilter implements ExceptionFilter {
@@ -29,8 +23,6 @@ export class ErrorFilter implements ExceptionFilter {
     const req = host.switchToHttp().getRequest() as Request;
     const correlationId = req.headers[CORRELATIONID];
 
-    this.logger.setLogId(generateCode({ length: 8 }));
-
     const now = DateTime.now().toISO();
     const errorResponse = this.getErrorResponse(error);
     const response = {
@@ -39,8 +31,8 @@ export class ErrorFilter implements ExceptionFilter {
       correlationId,
       timestamp: now,
       took: `${
-        DateTime.fromISO(now).millisecond -
-        DateTime.fromISO(req.headers[TIMESTAMPS] as string).millisecond
+        DateTime.fromISO(now).valueOf() -
+        DateTime.fromISO(req.headers[TIMESTAMPS] as string).valueOf()
       } ms`,
     };
 
@@ -59,32 +51,43 @@ export class ErrorFilter implements ExceptionFilter {
 
   private getErrorResponse(error: Error) {
     let status = 500;
-    let message: string | object =
-      INTERNAL_SERVER_ERROR.messages[ErrorMessageEnum.internalServerError];
-    let code: string = INTERNAL_SERVER_ERROR.code;
+    let message: string | object = 'Internal server error';
+    let code = 'INTERNAL_SERVER_ERROR';
 
     if (error instanceof CustomException) {
       status = error.getStatus();
       message = error.getResponse();
       code = error.getCode();
     }
-
+    console.log(error);
     if (error instanceof UnauthorizedException) {
       status = error.getStatus();
-      message = error.getResponse()['message'];
-      code = UNAUTHORIZED.code;
+      const { message: errorMessage, code: errorCode } = this.getErrorMessage(
+        error.getResponse(),
+        'UNAUTHORIZED',
+      );
+      message = errorMessage;
+      code = errorCode;
     }
 
     if (error instanceof ForbiddenException) {
       status = error.getStatus();
-      message = error.getResponse()['message'];
-      code = FORBIDDEN.code;
+      const { message: errorMessage, code: errorCode } = this.getErrorMessage(
+        error.getResponse(),
+        'FORBIDDEN',
+      );
+      message = errorMessage;
+      code = errorCode;
     }
 
     if (error instanceof ServiceUnavailableException) {
       status = error.getStatus();
-      message = error.getResponse();
-      code = SERVICE_UNAVAILABLE_ERROR.code;
+      const { message: errorMessage, code: errorCode } = this.getErrorMessage(
+        error.getResponse(),
+        'SERVICE_UNAVAILABLE',
+      );
+      message = errorMessage;
+      code = errorCode;
     }
 
     return {
@@ -92,6 +95,20 @@ export class ErrorFilter implements ExceptionFilter {
       statusCode: status,
       code,
       message,
+    };
+  }
+
+  private getErrorMessage(errorResponse: string | object, defaultCode: string) {
+    const responseMessage = messages[errorResponse['message']] as Message;
+    if (responseMessage) {
+      return {
+        message: responseMessage.content,
+        code: responseMessage.code,
+      };
+    }
+    return {
+      message: errorResponse['message'],
+      code: defaultCode,
     };
   }
 }

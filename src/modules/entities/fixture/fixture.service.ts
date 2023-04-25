@@ -1,17 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { BaseService } from '../../base/base.service';
 import { And, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FixtureEntity } from './fixture.entity';
 import { BusinessException } from '../../../common/exceptions';
-import {
-  BAD_REQUEST,
-  ErrorMessageEnum,
-} from '../../../common/constants/errors';
 
 import { DateTime } from 'luxon';
-import { CalendarQuery } from './types';
+import {
+  CalendarQuery,
+  FixtureCarendarPayload,
+  FixturePayload,
+} from './fixture.types';
 import { ParsedFilterQuery } from '../../filter/types';
+import { ErrorMessageEnum } from '../../../common/types';
+import { Filter } from '../../../common/decorators/filter';
 
 @Injectable()
 export class FixtureService extends BaseService<FixtureEntity> {
@@ -23,15 +25,37 @@ export class FixtureService extends BaseService<FixtureEntity> {
   }
 
   async getFixtures(
-    filter: ParsedFilterQuery<FixtureEntity>,
-  ): Promise<FixtureEntity[]> {
+    @Filter() filter: ParsedFilterQuery<FixtureEntity>,
+  ): Promise<FixturePayload[]> {
+    const where = filter.where || [];
+    if (!where.length) {
+      where.push({
+        kickoffTime: And(
+          MoreThanOrEqual(DateTime.now().startOf('week').toJSDate()),
+          LessThanOrEqual(DateTime.now().endOf('week').toJSDate()),
+        ),
+      });
+    } else {
+      where.forEach((w) => {
+        if (!w.kickoffTime) {
+          w.kickoffTime = And(
+            MoreThanOrEqual(DateTime.now().startOf('week').toJSDate()),
+            LessThanOrEqual(DateTime.now().endOf('week').toJSDate()),
+          );
+        }
+      });
+    }
+
+    filter.where = where;
     filter.relations = { tournament: true, home: true, away: true };
     filter.order = { kickoffTime: 'ASC' };
 
     return this.fixtureRepository.find(filter);
   }
 
-  async getFixturesCalendar(query: CalendarQuery): Promise<Date[]> {
+  async getFixtureCalendar(
+    query: CalendarQuery,
+  ): Promise<FixtureCarendarPayload> {
     const gte = query?.from
       ? DateTime.fromISO(query.from)
       : DateTime.now().startOf('month');
@@ -39,12 +63,15 @@ export class FixtureService extends BaseService<FixtureEntity> {
       ? DateTime.fromISO(query.to)
       : DateTime.now().endOf('month');
     if (!gte.isValid || !lte.isValid) {
-      throw new BusinessException(BAD_REQUEST, ErrorMessageEnum.invalidFilter);
+      throw new BusinessException(
+        ErrorMessageEnum.invalidFilter,
+        HttpStatus.BAD_REQUEST,
+      );
     }
     if (gte > lte) {
       throw new BusinessException(
-        BAD_REQUEST,
         ErrorMessageEnum.startDateGreaterThanEndDate,
+        HttpStatus.BAD_REQUEST,
       );
     }
     const fixtures = await this.fixtureRepository.find({
@@ -59,6 +86,6 @@ export class FixtureService extends BaseService<FixtureEntity> {
       },
     });
     const dates = fixtures.map((fixture) => fixture.kickoffTime);
-    return dates;
+    return dates.map((date) => date.toISOString());
   }
 }

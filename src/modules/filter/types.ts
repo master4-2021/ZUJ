@@ -31,12 +31,12 @@ export type Sort<T> = {
   [P in keyof T]?: 'ASC' | 'DESC';
 };
 
-export type FilterOperator = {
+export type FilterOperators = {
   [key in FilterOperatorEnum]?: FilterValue | FilterValue[];
 };
 
 export type BaseFilter<T> = {
-  [P in keyof T]?: FilterValue | FilterOperator;
+  [P in keyof T]?: FilterValue | FilterOperators;
 };
 
 export type Filter<T> = BaseFilter<T> & {
@@ -53,7 +53,7 @@ export type FilterRequestQuery = {
 };
 
 export type ParsedFilterQuery<T> = {
-  where?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
+  where?: FindOptionsWhere<T>[];
   take?: number;
   skip?: number;
   order?: FindOptionsOrder<T>;

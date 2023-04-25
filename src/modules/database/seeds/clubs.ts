@@ -3,7 +3,7 @@ import { ClubService } from '../../entities/club/club.service';
 import { TournamentEntity } from '../../entities/tournament/tournament.entity';
 import { TournamentService } from '../../entities/tournament/tournament.service';
 import { promiseWhile } from '../../../utils/promiseWhile';
-import { Region } from '../../../common/types';
+import { Region } from '../../entities/tournament/tournament.types';
 
 const PLClubs: Partial<ClubEntity>[] = [
   {
@@ -232,7 +232,7 @@ async function createClubs(
   clubService: ClubService,
   tournamentService: TournamentService,
 ) {
-  await clubService.deleteMany({ where: {} });
+  await clubService.deleteMany();
 
   const tournaments = await tournamentService.findAll();
   if (tournaments.length === 0) {

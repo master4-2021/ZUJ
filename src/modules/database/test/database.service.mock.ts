@@ -1,4 +1,4 @@
-export default {
+export const mockRepository = {
   count: jest.fn(),
   find: jest.fn(),
   findOne: jest.fn(),

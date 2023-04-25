@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../base/base.entity';
 import { ClubEntity } from '../club/club.entity';
 import { TournamentEntity } from '../tournament/tournament.entity';
-import { FixtureStatus } from '../../../common/types';
+import { FixtureStatus } from './fixture.types';
 
 @Entity('fixture')
 export class FixtureEntity extends BaseEntity {

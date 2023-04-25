@@ -1,20 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { FindOptionsWhere } from 'typeorm';
-import {
-  CONFLICT_ERROR,
-  ErrorMessageEnum,
-  UNAUTHORIZED,
-} from '../../common/constants/errors';
 import { Role } from '../../common/decorators/roles';
 import { BusinessException } from '../../common/exceptions';
 import { EncryptionAndHashService } from '../encryptionAndHash/encrypttionAndHash.service';
-import { RefreshTokenEntity } from '../entities/refreshToken/refreshToken.entity';
 import { RefreshTokenService } from '../entities/refreshToken/refreshToken.service';
 import { UserEntity } from '../entities/user/user.entity';
 import { UserService } from '../entities/user/user.service';
 import { RegisterDto } from './auth.dto';
-import { ValidatedUser } from './types';
-import { RefreshTokenPayload } from '../entities/refreshToken/types';
+import { LoginPayload, RegisterPayload, ValidatedUser } from './auth.types';
+import hideOrOmitFields from '../../utils/hideOrOmitFields';
+import { ErrorMessageEnum } from '../../common/types';
 
 @Injectable()
 export class AuthService {
@@ -28,11 +23,9 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<ValidatedUser> {
-    const user = await this.usersService.findOne({ where: { username } });
+    const user = await this.usersService.findOne({ where: [{ username }] });
     if (!user) {
-      throw new UnauthorizedException(
-        UNAUTHORIZED.messages[ErrorMessageEnum.invalidCredentials],
-      );
+      throw new UnauthorizedException(ErrorMessageEnum.invalidCredentials);
     }
 
     const isPasswordValid = await this.encryptionAndHashService.compare(
@@ -40,9 +33,7 @@ export class AuthService {
       user.password,
     );
     if (!isPasswordValid) {
-      throw new UnauthorizedException(
-        UNAUTHORIZED.messages[ErrorMessageEnum.invalidCredentials],
-      );
+      throw new UnauthorizedException(ErrorMessageEnum.invalidCredentials);
     }
     return {
       username: user.username,
@@ -51,15 +42,11 @@ export class AuthService {
     };
   }
 
-  async login(validatedUser: ValidatedUser): Promise<RefreshTokenPayload> {
+  async login(validatedUser: ValidatedUser): Promise<LoginPayload> {
     return await this.refreshTokenService.createToken(validatedUser);
   }
 
-  async logout(userId: string): Promise<RefreshTokenEntity> {
-    return await this.refreshTokenService.revoke(userId);
-  }
-
-  async register(registerDto: RegisterDto): Promise<UserEntity> {
+  async register(registerDto: RegisterDto): Promise<RegisterPayload> {
     const { username, email, password } = registerDto;
     let where: FindOptionsWhere<UserEntity>[] = [{ username }];
     if (email) {
@@ -67,14 +54,19 @@ export class AuthService {
     }
     const user = await this.usersService.findOne({ where });
     if (user) {
-      throw new BusinessException(CONFLICT_ERROR, ErrorMessageEnum.userExisted);
+      throw new BusinessException(
+        ErrorMessageEnum.userExisted,
+        HttpStatus.CONFLICT,
+      );
     }
     const hashedPassword = await this.encryptionAndHashService.hash(password);
 
-    return await this.usersService.save({
+    const result = await this.usersService.save({
       ...registerDto,
       password: hashedPassword,
       role: Role.USER,
     });
+
+    return hideOrOmitFields(result, ['password'], true);
   }
 }

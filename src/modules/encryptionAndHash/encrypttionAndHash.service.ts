@@ -17,6 +17,7 @@ export class EncryptionAndHashService {
   private readonly encryptionSecret: string;
   private cipher: Cipher;
   private decipher: Decipher;
+  private readonly iv: Buffer;
   constructor(private readonly configService: ConfigService) {
     this.encryptionSecret = this.configService.get<string>(
       'encryptionAndHash.encryptionSecret',
@@ -24,21 +25,22 @@ export class EncryptionAndHashService {
     this.saltOrRounds = this.configService.get<number>(
       'encryptionAndHash.hashSaltOrRound',
     );
-    const iv = randomBytes(16);
-    promisify(scrypt)(this.encryptionSecret, 'salt', 32).then((key: Buffer) => {
-      this.cipher = createCipheriv('aes-256-ctr', key, iv);
-      this.decipher = createDecipheriv('aes-256-ctr', key, iv);
-    });
+
+    this.iv = randomBytes(16);
   }
 
-  encrypt(value: string): string {
+  async encrypt(value: string): Promise<string> {
+    await this.init();
+
     return Buffer.concat([
       this.cipher.update(value),
       this.cipher.final(),
     ]).toString('base64');
   }
 
-  decrypt(value: string): string {
+  async decrypt(value: string): Promise<string> {
+    await this.init();
+
     const valueBuffer = Buffer.from(value, 'base64');
     return Buffer.concat([
       this.decipher.update(valueBuffer),
@@ -52,5 +54,16 @@ export class EncryptionAndHashService {
 
   async compare(value: string, hash: string): Promise<boolean> {
     return await bcrypt.compare(value, hash);
+  }
+
+  private async init(): Promise<void> {
+    const key = (await promisify(scrypt)(
+      this.encryptionSecret,
+      'salt',
+      32,
+    )) as Buffer;
+
+    this.cipher = createCipheriv('aes-256-ctr', key, this.iv);
+    this.decipher = createDecipheriv('aes-256-ctr', key, this.iv);
   }
 }

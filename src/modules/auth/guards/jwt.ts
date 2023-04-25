@@ -5,11 +5,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import {
-  ErrorMessageEnum,
-  UNAUTHORIZED,
-} from '../../../common/constants/errors';
 import { PUBLIC_KEY } from '../../../common/decorators/public';
+import { ErrorMessageEnum } from '../../../common/types';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -27,9 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     const accessToken = request.headers.authorization?.split(' ')[1];
     if (!accessToken) {
-      throw new UnauthorizedException(
-        UNAUTHORIZED.messages[ErrorMessageEnum.accessTokenIsMissing],
-      );
+      throw new UnauthorizedException(ErrorMessageEnum.accessTokenIsMissing);
     }
 
     return super.canActivate(context) as boolean;

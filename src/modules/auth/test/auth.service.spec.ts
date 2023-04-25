@@ -1,49 +1,49 @@
-import { TestingModule, Test } from '@nestjs/testing';
-import { RegisterDto } from '../../src/modules/auth/auth.dto';
-import { AuthService } from '../../src/modules/auth/auth.service';
-import { ValidatedUser } from '../../src/modules/auth/types';
-import { RefreshTokenEntity } from '../../src/modules/entities/refreshToken/refreshToken.entity';
-import { UserEntity } from '../../src/modules/entities/user/user.entity';
-import {
-  mockUser,
-  mockRefreshToken,
-  mockRefreshTokenPayload,
-} from '../mock/output.mock';
-import { UserService } from '../../src/modules/entities/user/user.service';
-import { RefreshTokenService } from '../../src/modules/entities/refreshToken/refreshToken.service';
-import { EncryptionAndHashService } from '../../src/modules/encryptionAndHash/encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../../encryptionAndHash/encrypttionAndHash.service';
+import { RefreshTokenService } from '../../entities/refreshToken/refreshToken.service';
+import { UserEntity } from '../../entities/user/user.entity';
+import { UserService } from '../../entities/user/user.service';
+import { LoginDto, RegisterDto } from '../auth.dto';
+import { AuthService } from '../auth.service';
+import { ValidatedUser, LoginPayload, RegisterPayload } from '../auth.types';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
-import { mockRegisterDto, mockValidatedUser } from '../mock/input.mock';
-import { UnauthorizedException } from '@nestjs/common';
 import {
-  UNAUTHORIZED,
-  ErrorMessageEnum,
-  CONFLICT_ERROR,
-} from '../../src/common/constants/errors';
-import { Role } from '../../src/common/decorators/roles';
-import { BusinessException } from '../../src/common/exceptions';
-import { RefreshTokenPayload } from '../../src/modules/entities/refreshToken/types';
+  mockLoginDto,
+  mockLoginPayload,
+  mockRegisterDto,
+  mockRegisterPayload,
+  mockUserRecord,
+  mockValidatedUser,
+} from './auth.mock';
+import { Test, TestingModule } from '@nestjs/testing';
+import { HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { ErrorMessageEnum } from '../../../common/types';
+import { Role } from '../../../common/decorators/roles';
+import { BusinessException } from '../../../common/exceptions';
 
 const moduleMocker = new ModuleMocker(global);
 
 describe('AuthService', () => {
-  let registerDto: RegisterDto;
-  let user: UserEntity;
-  let refreshToken: RefreshTokenEntity;
-  let validatedUser: ValidatedUser;
-  let refreshTokenPayload: RefreshTokenPayload;
-
   let authService: AuthService;
   let encryptionAndHashService: EncryptionAndHashService;
   let userService: UserService;
   let refreshTokenService: RefreshTokenService;
 
+  let userRecord: UserEntity;
+  let registerDto: RegisterDto;
+  let loginDto: LoginDto;
+  let validatedUser: ValidatedUser;
+  let loginPayload: LoginPayload;
+  let hashedPassword: string;
+  let registerPayload: RegisterPayload;
+
   beforeEach(async () => {
-    registerDto = mockRegisterDto;
-    user = mockUser;
-    refreshToken = mockRefreshToken;
-    validatedUser = mockValidatedUser;
-    refreshTokenPayload = mockRefreshTokenPayload;
+    userRecord = { ...mockUserRecord };
+    registerDto = { ...mockRegisterDto };
+    validatedUser = { ...mockValidatedUser };
+    loginPayload = { ...mockLoginPayload };
+    hashedPassword = '$2b$10$Q8';
+    loginDto = { ...mockLoginDto };
+    registerPayload = { ...mockRegisterPayload };
 
     const app: TestingModule = await Test.createTestingModule({
       providers: [AuthService],
@@ -51,22 +51,21 @@ describe('AuthService', () => {
       .useMocker((target) => {
         if (target === UserService) {
           return {
-            findOne: jest.fn().mockResolvedValue(user),
-            save: jest.fn().mockResolvedValue(user),
+            findOne: jest.fn().mockResolvedValue(userRecord),
+            save: jest.fn().mockResolvedValue(userRecord),
           };
         }
 
         if (target === RefreshTokenService) {
           return {
-            createToken: jest.fn().mockResolvedValue(mockRefreshTokenPayload),
-            revoke: jest.fn().mockResolvedValue(refreshToken),
+            createToken: jest.fn().mockResolvedValue(loginPayload),
           };
         }
 
         if (target === EncryptionAndHashService) {
           return {
             compare: jest.fn().mockResolvedValue(true),
-            hash: jest.fn().mockResolvedValue(user.password),
+            hash: jest.fn().mockResolvedValue(hashedPassword),
           };
         }
 
@@ -88,38 +87,38 @@ describe('AuthService', () => {
     refreshTokenService = app.get<RefreshTokenService>(RefreshTokenService);
   });
 
+  it('should be defined', () => {
+    expect(authService).toBeDefined();
+  });
+
   describe('validateUser', () => {
-    const input = {
-      username: 'username',
-      password: 'password',
-    };
     it('should return an validated user', async () => {
       expect(
-        await authService.validateUser(input.username, input.password),
+        await authService.validateUser(loginDto.username, loginDto.password),
       ).toStrictEqual(validatedUser);
 
       expect(userService.findOne).toHaveBeenCalledWith({
-        where: { username: input.username },
+        where: [{ username: loginDto.username }],
       });
 
       expect(encryptionAndHashService.compare).toHaveBeenCalledWith(
-        input.password,
-        user.password,
+        loginDto.password,
+        userRecord.password,
       );
     });
 
     it('should throw unauthorized error when user not found when validate user', async () => {
       jest.spyOn(userService, 'findOne').mockResolvedValue(null);
       const error = new UnauthorizedException(
-        UNAUTHORIZED.messages[ErrorMessageEnum.invalidCredentials],
+        ErrorMessageEnum.invalidCredentials,
       );
 
       await expect(
-        authService.validateUser(input.username, input.password),
+        authService.validateUser(loginDto.username, loginDto.password),
       ).rejects.toThrowError(error);
 
       expect(userService.findOne).toHaveBeenCalledWith({
-        where: { username: input.username },
+        where: [{ username: loginDto.username }],
       });
 
       expect(encryptionAndHashService.compare).not.toHaveBeenCalled();
@@ -128,27 +127,29 @@ describe('AuthService', () => {
     it('should throw unauthorized error when password not match when validate user', async () => {
       jest.spyOn(encryptionAndHashService, 'compare').mockResolvedValue(false);
       const error = new UnauthorizedException(
-        UNAUTHORIZED.messages[ErrorMessageEnum.invalidCredentials],
+        ErrorMessageEnum.invalidCredentials,
       );
 
       await expect(
-        authService.validateUser(input.username, input.password),
+        authService.validateUser(loginDto.username, loginDto.password),
       ).rejects.toThrowError(error);
 
       expect(userService.findOne).toHaveBeenCalledWith({
-        where: { username: input.username },
+        where: [{ username: loginDto.username }],
       });
 
       expect(encryptionAndHashService.compare).toHaveBeenCalledWith(
-        input.password,
-        user.password,
+        loginDto.password,
+        userRecord.password,
       );
     });
   });
 
   describe('login', () => {
     it('should return token when login', async () => {
-      expect(await authService.login(validatedUser)).toBe(refreshTokenPayload);
+      expect(await authService.login(validatedUser)).toStrictEqual(
+        loginPayload,
+      );
 
       expect(refreshTokenService.createToken).toHaveBeenCalledWith(
         validatedUser,
@@ -156,19 +157,13 @@ describe('AuthService', () => {
     });
   });
 
-  describe('logout', () => {
-    it('should return deleteResult when logout', async () => {
-      expect(await authService.logout(user.id)).toBe(refreshToken);
-
-      expect(refreshTokenService.revoke).toHaveBeenCalledWith(user.id);
-    });
-  });
-
   describe('register', () => {
     it('should return an user', async () => {
       jest.spyOn(userService, 'findOne').mockResolvedValue(null);
 
-      expect(await authService.register(registerDto)).toBe(user);
+      expect(await authService.register(registerDto)).toStrictEqual(
+        registerPayload,
+      );
 
       expect(userService.findOne).toHaveBeenCalledWith({
         where: [
@@ -181,21 +176,17 @@ describe('AuthService', () => {
         registerDto.password,
       );
 
-      expect(await encryptionAndHashService.hash(registerDto.password)).toBe(
-        user.password,
-      );
-
       expect(userService.save).toHaveBeenCalledWith({
         ...registerDto,
-        password: user.password,
+        password: hashedPassword,
         role: Role.USER,
       });
     });
 
     it('should throw user existed error when register', async () => {
       const error = new BusinessException(
-        CONFLICT_ERROR,
         ErrorMessageEnum.userExisted,
+        HttpStatus.CONFLICT,
       );
 
       await expect(authService.register(registerDto)).rejects.toThrowError(
