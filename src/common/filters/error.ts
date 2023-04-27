@@ -59,7 +59,7 @@ export class ErrorFilter implements ExceptionFilter {
       message = error.getResponse();
       code = error.getCode();
     }
-    console.log(error);
+
     if (error instanceof UnauthorizedException) {
       status = error.getStatus();
       const { message: errorMessage, code: errorCode } = this.getErrorMessage(
@@ -107,7 +107,7 @@ export class ErrorFilter implements ExceptionFilter {
       };
     }
     return {
-      message: errorResponse['message'],
+      message: errorResponse['message'] || errorResponse,
       code: defaultCode,
     };
   }

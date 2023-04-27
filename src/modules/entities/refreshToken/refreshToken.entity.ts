@@ -4,13 +4,16 @@ import { UserEntity } from '../user/user.entity';
 
 @Entity('token')
 export class RefreshTokenEntity extends BaseEntity {
-  @Column('longtext')
+  @Column()
   refreshToken: string;
+
+  @Column()
+  iv: string;
 
   @Column({ unique: true })
   userId: string;
 
-  @Column()
+  @Column('datetime')
   refreshExpiresIn: Date;
 
   @OneToOne(() => UserEntity)

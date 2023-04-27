@@ -17,6 +17,8 @@ import { ConfigModule } from '../config/config.module';
         entities: [],
         synchronize:
           configService.get<string>('database.mysql.synchronize') === 'true',
+        dropSchema:
+          configService.get<string>('database.mysql.dropSchema') === 'true',
         autoLoadEntities: true,
       }),
       inject: [ConfigService],

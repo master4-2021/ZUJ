@@ -5,6 +5,7 @@ import { EncryptionAndHashService } from '../encrypttionAndHash.service';
 
 describe('EncryptionAndHashService', () => {
   let encryptionAndHashService: EncryptionAndHashService;
+
   let value: string;
 
   beforeEach(async () => {
@@ -46,9 +47,11 @@ describe('EncryptionAndHashService', () => {
 
   describe('decrypt', () => {
     it('should decrypt an encrypted string', async () => {
-      const encryptedValue = await encryptionAndHashService.encrypt(value);
+      const { encryptedData, iv } = await encryptionAndHashService.encrypt(
+        value,
+      );
 
-      expect(await encryptionAndHashService.decrypt(encryptedValue)).toEqual(
+      expect(await encryptionAndHashService.decrypt(encryptedData, iv)).toEqual(
         value,
       );
     });

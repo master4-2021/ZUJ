@@ -46,9 +46,19 @@ export class RefreshTokenService extends BaseService<RefreshTokenEntity> {
       ],
     });
 
-    const encrypted = await this.encryptionAndHashService.encrypt(refreshToken);
+    if (!tokenRecord) {
+      throw new BusinessException(
+        ErrorMessageEnum.invalidRefreshToken,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
-    if (tokenRecord?.refreshToken !== encrypted) {
+    const decrypted = await this.encryptionAndHashService.decrypt(
+      tokenRecord.refreshToken,
+      tokenRecord.iv,
+    );
+
+    if (refreshToken !== decrypted) {
       throw new BusinessException(
         ErrorMessageEnum.invalidRefreshToken,
         HttpStatus.BAD_REQUEST,
@@ -102,7 +112,9 @@ export class RefreshTokenService extends BaseService<RefreshTokenEntity> {
 
     const refreshToken = await this.sign(payload, 'refresh');
 
-    const encrypted = await this.encryptionAndHashService.encrypt(refreshToken);
+    const { encryptedData, iv } = await this.encryptionAndHashService.encrypt(
+      refreshToken,
+    );
 
     const tokenRecord = await this.findOne({
       where: [{ userId: validatedUser.userId }],
@@ -112,13 +124,15 @@ export class RefreshTokenService extends BaseService<RefreshTokenEntity> {
 
     if (!tokenRecord) {
       result = await this.save({
-        refreshToken: encrypted,
+        refreshToken: encryptedData,
+        iv,
         userId: validatedUser.userId,
         refreshExpiresIn: this.updateRefreshTokenExpiry(),
       });
     } else {
       result = await this.updateById(tokenRecord.id, {
-        refreshToken: encrypted,
+        refreshToken: encryptedData,
+        iv,
         refreshExpiresIn: this.updateRefreshTokenExpiry(),
       });
     }

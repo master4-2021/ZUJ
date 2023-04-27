@@ -10,6 +10,7 @@ import { LoggerService } from '../../modules/logger/logger.service';
 import getRequestInfo from '../../utils/requestInfo';
 import { API_CONTEXT, PARSED_FILTER } from '../constants';
 import { Response } from '../types';
+import hideOrOmitDeep from '../../utils/hideOrOmitFields';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -35,14 +36,14 @@ export class LoggingInterceptor implements NestInterceptor {
       map((data: Response) => {
         this.logger.log_(`"${method}" method invoked successfully!`, target, {
           took: `${Date.now() - now} ms`,
-          data: data?.data,
+          data: hideOrOmitDeep(data?.data, ['accessToken', 'refreshToken']),
         });
         this.logger.log_(
           `${req.method} ${req.path} successfully!`,
           API_CONTEXT,
           {
             request: getRequestInfo(req),
-            response: data,
+            response: hideOrOmitDeep(data, ['accessToken', 'refreshToken']),
           },
         );
         return data;

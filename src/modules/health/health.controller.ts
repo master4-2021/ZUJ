@@ -34,11 +34,11 @@ export class HealthController {
             'host',
           )}:${this.configService.get<number>('port')}/api/health/ping`,
         ),
-      () => this.db.pingCheck('Postgres', { timeout: 1500 }),
+      () => this.db.pingCheck('MySQL', { timeout: 1500 }),
       () =>
         this.disk.checkStorage('Storage', { path: '/', thresholdPercent: 0.5 }),
-      () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
-      () => this.memory.checkRSS('memory_rss', 150 * 1024 * 1024),
+      () => this.memory.checkHeap('memory_heap', 1024 * 1024 * 1024),
+      () => this.memory.checkRSS('memory_rss', 1024 * 1024 * 1024),
     ]);
   }
 

@@ -3,28 +3,27 @@ import { createRootUser } from '../modules/database/seeds/rootUser';
 import { EncryptionAndHashService } from '../modules/encryptionAndHash/encrypttionAndHash.service';
 import { LoggerService } from '../modules/logger/logger.service';
 import { UserEntity } from '../modules/entities/user/user.entity';
-import { UserService } from '../modules/entities/user/user.service';
 import { generateCode } from '../utils/codeGenerator';
 import { logWrapper } from './logWrapper';
-import { ClubService } from '../modules/entities/club/club.service';
-import { TournamentService } from '../modules/entities/tournament/tournament.service';
 import createTournaments from '../modules/database/seeds/tournaments';
 import { TournamentEntity } from '../modules/entities/tournament/tournament.entity';
 import { ClubEntity } from '../modules/entities/club/club.entity';
 import createClubs from '../modules/database/seeds/clubs';
 import createFixtures from '../modules/database/seeds/fixtures';
 import { FixtureEntity } from '../modules/entities/fixture/fixture.entity';
-import { FixtureService } from '../modules/entities/fixture/fixture.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 const LOG_CONTEXT = 'Database initialization';
 
 async function initDb(appModule: INestApplicationContext) {
-  const userService = appModule.get(UserService);
+  const userRepository = appModule.get(getRepositoryToken(UserEntity));
   const hashService = appModule.get(EncryptionAndHashService);
   const logger = appModule.get(LoggerService);
-  const clubService = appModule.get(ClubService);
-  const tournamentService = appModule.get(TournamentService);
-  const fixtureService = appModule.get(FixtureService);
+  const clubRepository = appModule.get(getRepositoryToken(ClubEntity));
+  const tournamentRepository = appModule.get(
+    getRepositoryToken(TournamentEntity),
+  );
+  const fixtureRepository = appModule.get(getRepositoryToken(FixtureEntity));
   logger.setLogId(generateCode({ length: 8 }));
 
   logger.log_('Initialize database...', LOG_CONTEXT);
@@ -32,28 +31,28 @@ async function initDb(appModule: INestApplicationContext) {
   await logWrapper<UserEntity>(
     logger,
     createRootUser,
-    [userService, hashService],
+    [userRepository, hashService],
     'Create root user',
   );
 
   await logWrapper<TournamentEntity[]>(
     logger,
     createTournaments,
-    [tournamentService],
+    [tournamentRepository],
     'Create tournaments',
   );
 
   await logWrapper<ClubEntity[]>(
     logger,
     createClubs,
-    [clubService, tournamentService],
+    [clubRepository, tournamentRepository],
     'Create clubs',
   );
 
   await logWrapper<FixtureEntity[]>(
     logger,
     createFixtures,
-    [fixtureService, tournamentService],
+    [fixtureRepository, tournamentRepository],
     'Create fixtures',
   );
 

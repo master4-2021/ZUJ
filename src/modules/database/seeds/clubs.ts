@@ -1,9 +1,8 @@
 import { ClubEntity } from '../../entities/club/club.entity';
-import { ClubService } from '../../entities/club/club.service';
 import { TournamentEntity } from '../../entities/tournament/tournament.entity';
-import { TournamentService } from '../../entities/tournament/tournament.service';
 import { promiseWhile } from '../../../utils/promiseWhile';
 import { Region } from '../../entities/tournament/tournament.types';
+import { Repository } from 'typeorm';
 
 const PLClubs: Partial<ClubEntity>[] = [
   {
@@ -229,12 +228,10 @@ function addTournamentToClubs(
 }
 
 async function createClubs(
-  clubService: ClubService,
-  tournamentService: TournamentService,
+  repository: Repository<ClubEntity>,
+  tournamentRepository: Repository<TournamentEntity>,
 ) {
-  await clubService.deleteMany();
-
-  const tournaments = await tournamentService.findAll();
+  const tournaments = await tournamentRepository.find();
   if (tournaments.length === 0) {
     throw new Error('Tournaments not found');
   }
@@ -271,7 +268,7 @@ async function createClubs(
     0,
   );
 
-  return await clubService.saveMany([
+  return await repository.save([
     ...PLClubs,
     ...SAClubs,
     ...BLClubs,

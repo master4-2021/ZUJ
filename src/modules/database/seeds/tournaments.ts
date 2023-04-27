@@ -1,5 +1,5 @@
+import { Repository } from 'typeorm';
 import { TournamentEntity } from '../../entities/tournament/tournament.entity';
-import { TournamentService } from '../../entities/tournament/tournament.service';
 import { Region } from '../../entities/tournament/tournament.types';
 
 const tournamentData: Partial<TournamentEntity>[] = [
@@ -54,8 +54,8 @@ const tournamentData: Partial<TournamentEntity>[] = [
   },
 ];
 
-async function createTournaments(tournamentService: TournamentService) {
-  return await tournamentService.saveMany(tournamentData);
+async function createTournaments(repositpry: Repository<TournamentEntity>) {
+  return await repositpry.save(tournamentData);
 }
 
 export default createTournaments;

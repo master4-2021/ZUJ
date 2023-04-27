@@ -10,6 +10,7 @@ export default () => ({
       password: process.env.MYSQL_PASSWORD,
       database: process.env.MYSQL_DATABASE,
       synchronize: process.env.MYSQL_SYCRONIZE,
+      dropSchema: process.env.MYSQL_DROP_SCHEMA,
     },
   },
   jwt: {
