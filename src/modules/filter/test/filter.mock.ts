@@ -16,7 +16,7 @@ const date1 = DateTime.now().toISO();
 const date2 = DateTime.now().toISO();
 
 const mockFilterQuery: FilterRequestQuery = {
-  filter: JSON.stringify({
+  filter: {
     field1: 'value1',
     field2: {
       in: ['value1', 'value2'],
@@ -38,16 +38,16 @@ const mockFilterQuery: FilterRequestQuery = {
         },
       },
     ],
-  }),
-  limit: 10,
-  skip: 0,
-  sort: JSON.stringify({
+  },
+  limit: '10',
+  skip: '0',
+  sort: {
     field1: 'asc',
-  }),
-  fields: JSON.stringify({
+  },
+  fields: {
     field1: 1,
     field2: 0,
-  }),
+  },
 };
 
 const mockParsedFilterQuery: ParsedFilterQuery<Record<string, any>> = {

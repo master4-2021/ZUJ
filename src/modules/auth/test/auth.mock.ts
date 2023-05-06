@@ -29,6 +29,7 @@ const mockLoginDto: LoginDto = {
 
 const mockLoginPayload: LoginPayload = {
   userId,
+  iv: 'iv',
   refreshToken: 'refreshToken',
   accessToken: 'accessToken',
   refreshExpiresIn: DateTime.now().plus({ days: 30 }).toJSDate(),
@@ -44,11 +45,11 @@ const mockUserRecord: UserEntity = {
   role: Role.USER,
 };
 
-const mockRegisterPayload: RegisterPayload = hideOrOmitDeep(
+const mockRegisterPayload = hideOrOmitDeep(
   mockUserRecord,
   ['password'],
   true,
-);
+) as RegisterPayload;
 
 export {
   mockValidatedUser,

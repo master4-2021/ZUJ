@@ -10,8 +10,8 @@ import { RefreshTokenPayload, RevokeTokenPayload } from '../refreshToken.types';
 import { mockRepository } from '../../../database/test/database.service.mock';
 import { JWT_TOKEN, REFRESH_JWT_TOKEN } from '../../../../common/constants';
 import { mockJwtService } from '../../../jwt/test/jwt.service.mock';
-import { JwtService } from '@nestjs/jwt';
 import {
+  mockEncryptedRefreshToken,
   mockJwtPayload,
   mockRefreshTokenPayload,
   mockRefreshTokenRecord,
@@ -21,7 +21,8 @@ import {
 import { DateTime } from 'luxon';
 import { BusinessException } from '../../../../common/exceptions';
 import { ErrorMessageEnum } from '../../../../common/types';
-import { HttpStatus } from '@nestjs/common';
+import { HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { EncryptionPayload } from '../../../encryptionAndHash/types';
 
 const moduleMocker = new ModuleMocker(global);
 
@@ -31,7 +32,8 @@ describe('RefreshTokenService', () => {
 
   let refreshToken: string;
   let accessToken: string;
-  let encryptedRefreshToken: string;
+  let oldAccessToken: string;
+  let encryptedRefreshToken: EncryptionPayload;
   let refreshTokenPayload: RefreshTokenPayload;
   let revokeTokenPayload: RevokeTokenPayload;
   let refreshTokenRecord: RefreshTokenEntity;
@@ -41,7 +43,8 @@ describe('RefreshTokenService', () => {
   beforeEach(async () => {
     refreshToken = 'refreshToken';
     accessToken = 'accessToken';
-    encryptedRefreshToken = 'encryptedRefreshToken';
+    oldAccessToken = 'oldAccessToken';
+    encryptedRefreshToken = { ...mockEncryptedRefreshToken };
     refreshTokenPayload = { ...mockRefreshTokenPayload };
     refreshTokenRecord = { ...mockRefreshTokenRecord };
     jwtPayload = { ...mockJwtPayload };
@@ -82,6 +85,7 @@ describe('RefreshTokenService', () => {
         if (target === EncryptionAndHashService) {
           return {
             encrypt: jest.fn().mockResolvedValue(encryptedRefreshToken),
+            decrypt: jest.fn().mockResolvedValue(refreshToken),
           };
         }
 
@@ -117,11 +121,21 @@ describe('RefreshTokenService', () => {
       jest.spyOn(refreshTokenService, 'verify').mockResolvedValue(jwtPayload);
       jest.spyOn(refreshTokenService, 'sign').mockResolvedValue(accessToken);
 
-      expect(await refreshTokenService.refresh(refreshToken)).toStrictEqual(
-        refreshTokenPayload,
+      expect(
+        await refreshTokenService.refresh(oldAccessToken, refreshToken),
+      ).toStrictEqual(refreshTokenPayload);
+
+      expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+        1,
+        oldAccessToken,
+        'access',
+        {
+          ignoreExpiration: true,
+        },
       );
 
-      expect(refreshTokenService.verify).toHaveBeenCalledWith(
+      expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+        2,
         refreshToken,
         'refresh',
         {
@@ -133,8 +147,9 @@ describe('RefreshTokenService', () => {
         where: [{ userId: jwtPayload.sub }],
       });
 
-      expect(encryptionAndHashService.encrypt).toHaveBeenCalledWith(
-        refreshToken,
+      expect(encryptionAndHashService.decrypt).toHaveBeenCalledWith(
+        refreshTokenRecord.refreshToken,
+        refreshTokenRecord.iv,
       );
 
       expect(refreshTokenService.sign).toHaveBeenCalledWith(
@@ -151,26 +166,41 @@ describe('RefreshTokenService', () => {
     });
 
     it.each([null, { ...mockRefreshTokenRecord }])(
-      'should throw error if refresh token is not found or invalid',
+      'should throw error if refresh token is not found or user unauthenticated',
       async (item) => {
-        const error = new BusinessException(
-          ErrorMessageEnum.invalidRefreshToken,
-          HttpStatus.BAD_REQUEST,
+        const error = new UnauthorizedException(
+          ErrorMessageEnum.invalidCredentials,
         );
 
-        jest.spyOn(refreshTokenService, 'verify').mockResolvedValue(jwtPayload);
+        jest
+          .spyOn(refreshTokenService, 'verify')
+          .mockImplementation((_token, type) => {
+            return type === 'refresh'
+              ? Promise.resolve(jwtPayload)
+              : Promise.resolve({ ...jwtPayload, sub: 'anotherUserId' });
+          });
         jest.spyOn(refreshTokenService, 'findOne').mockResolvedValue(item);
         jest.spyOn(refreshTokenService, 'sign').mockResolvedValue(null);
         jest.spyOn(refreshTokenService, 'updateById').mockResolvedValue(null);
         jest
-          .spyOn(encryptionAndHashService, 'encrypt')
-          .mockResolvedValue('anotherDifferentEncryptedRefreshToken');
+          .spyOn(encryptionAndHashService, 'decrypt')
+          .mockResolvedValue('anotherRefreshToken');
 
-        await expect(refreshTokenService.refresh(refreshToken)).rejects.toThrow(
-          error,
+        await expect(
+          refreshTokenService.refresh(oldAccessToken, refreshToken),
+        ).rejects.toThrow(error);
+
+        expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+          1,
+          oldAccessToken,
+          'access',
+          {
+            ignoreExpiration: true,
+          },
         );
 
-        expect(refreshTokenService.verify).toHaveBeenCalledWith(
+        expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+          2,
           refreshToken,
           'refresh',
           {
@@ -182,15 +212,65 @@ describe('RefreshTokenService', () => {
           where: [{ userId: jwtPayload.sub }],
         });
 
-        expect(encryptionAndHashService.encrypt).toHaveBeenCalledWith(
-          refreshToken,
-        );
+        expect(encryptionAndHashService.decrypt).not.toHaveBeenCalled();
 
         expect(refreshTokenService.sign).not.toHaveBeenCalled();
 
         expect(refreshTokenService.updateById).not.toHaveBeenCalled();
       },
     );
+
+    it('should throw error if refresh token is not valid', async () => {
+      const error = new BusinessException(
+        ErrorMessageEnum.invalidRefreshToken,
+        HttpStatus.BAD_REQUEST,
+      );
+
+      jest.spyOn(refreshTokenService, 'verify').mockResolvedValue(jwtPayload);
+      jest
+        .spyOn(refreshTokenService, 'findOne')
+        .mockResolvedValue(refreshTokenRecord);
+      jest.spyOn(refreshTokenService, 'sign').mockResolvedValue(null);
+      jest.spyOn(refreshTokenService, 'updateById').mockResolvedValue(null);
+      jest
+        .spyOn(encryptionAndHashService, 'decrypt')
+        .mockResolvedValue('anotherRefreshToken');
+
+      await expect(
+        refreshTokenService.refresh(oldAccessToken, refreshToken),
+      ).rejects.toThrow(error);
+
+      expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+        1,
+        oldAccessToken,
+        'access',
+        {
+          ignoreExpiration: true,
+        },
+      );
+
+      expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+        2,
+        refreshToken,
+        'refresh',
+        {
+          ignoreExpiration: true,
+        },
+      );
+
+      expect(refreshTokenService.findOne).toHaveBeenCalledWith({
+        where: [{ userId: jwtPayload.sub }],
+      });
+
+      expect(encryptionAndHashService.decrypt).toHaveBeenCalledWith(
+        refreshTokenRecord.refreshToken,
+        refreshTokenRecord.iv,
+      );
+
+      expect(refreshTokenService.sign).not.toHaveBeenCalled();
+
+      expect(refreshTokenService.updateById).not.toHaveBeenCalled();
+    });
 
     it('should throw error if refresh token is expired', async () => {
       const expiredRefreshTokenRecord = {
@@ -209,11 +289,21 @@ describe('RefreshTokenService', () => {
       jest.spyOn(refreshTokenService, 'sign').mockResolvedValue(null);
       jest.spyOn(refreshTokenService, 'updateById').mockResolvedValue(null);
 
-      await expect(refreshTokenService.refresh(refreshToken)).rejects.toThrow(
-        error,
+      await expect(
+        refreshTokenService.refresh(oldAccessToken, refreshToken),
+      ).rejects.toThrow(error);
+
+      expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+        1,
+        oldAccessToken,
+        'access',
+        {
+          ignoreExpiration: true,
+        },
       );
 
-      expect(refreshTokenService.verify).toHaveBeenCalledWith(
+      expect(refreshTokenService.verify).toHaveBeenNthCalledWith(
+        2,
         refreshToken,
         'refresh',
         {
@@ -225,8 +315,9 @@ describe('RefreshTokenService', () => {
         where: [{ userId: jwtPayload.sub }],
       });
 
-      expect(encryptionAndHashService.encrypt).toHaveBeenCalledWith(
-        refreshToken,
+      expect(encryptionAndHashService.decrypt).toHaveBeenCalledWith(
+        expiredRefreshTokenRecord.refreshToken,
+        expiredRefreshTokenRecord.iv,
       );
 
       expect(refreshTokenService.sign).not.toHaveBeenCalled();
@@ -280,20 +371,8 @@ describe('RefreshTokenService', () => {
           await refreshTokenService.createToken(validatedUser),
         ).toStrictEqual(refreshTokenPayload);
 
-        expect(refreshTokenService.findOne).toHaveBeenCalledWith({
-          where: [{ userId: validatedUser.userId }],
-        });
-
-        expect(refreshTokenService.sign).toHaveBeenCalledWith(
-          {
-            sub: validatedUser.userId,
-            username: validatedUser.username,
-            role: validatedUser.role,
-          },
-          'refresh',
-        );
-
-        expect(refreshTokenService.sign).toHaveBeenCalledWith(
+        expect(refreshTokenService.sign).toHaveBeenNthCalledWith(
+          1,
           {
             sub: validatedUser.userId,
             username: validatedUser.username,
@@ -302,15 +381,35 @@ describe('RefreshTokenService', () => {
           'access',
         );
 
+        expect(refreshTokenService.sign).toHaveBeenNthCalledWith(
+          2,
+          {
+            sub: validatedUser.userId,
+            username: validatedUser.username,
+            role: validatedUser.role,
+          },
+          'refresh',
+        );
+
+        expect(encryptionAndHashService.encrypt).toHaveBeenCalledWith(
+          refreshToken,
+        );
+
+        expect(refreshTokenService.findOne).toHaveBeenCalledWith({
+          where: [{ userId: validatedUser.userId }],
+        });
+
         if (!item) {
           expect(refreshTokenService.save).toHaveBeenCalledWith({
             userId: validatedUser.userId,
-            refreshToken: encryptedRefreshToken,
+            refreshToken: encryptedRefreshToken.encryptedData,
+            iv: encryptedRefreshToken.iv,
             refreshExpiresIn: expect.any(Date),
           });
         } else {
           expect(refreshTokenService.updateById).toHaveBeenCalledWith(item.id, {
-            refreshToken: encryptedRefreshToken,
+            refreshToken: encryptedRefreshToken.encryptedData,
+            iv: encryptedRefreshToken.iv,
             refreshExpiresIn: expect.any(Date),
           });
         }

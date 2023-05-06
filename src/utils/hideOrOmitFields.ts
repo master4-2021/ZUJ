@@ -1,12 +1,20 @@
 import { DeepHideOrOmit } from '../common/types';
+import { isPrimitive } from './isPrimitive';
 
 export default function hideOrOmitDeep<T extends object, K extends string>(
-  obj: T,
-  keys: string[],
+  data: T | T[],
+  keys: K[],
   isDelete = false,
-): DeepHideOrOmit<T, K, typeof isDelete> {
-  return Object.keys(obj).reduce((acc, key) => {
-    if (keys.includes(key)) {
+):
+  | DeepHideOrOmit<T, K, typeof isDelete>
+  | DeepHideOrOmit<T, K, typeof isDelete>[] {
+  if (Array.isArray(data)) {
+    return data.map((item) =>
+      !isPrimitive(item) ? hideOrOmitDeep(item, keys, isDelete) : item,
+    ) as DeepHideOrOmit<T, K, typeof isDelete>[];
+  }
+  return Object.keys(data).reduce((acc, key) => {
+    if (keys.includes(key as K)) {
       if (isDelete) {
         return acc;
       }
@@ -15,11 +23,13 @@ export default function hideOrOmitDeep<T extends object, K extends string>(
         [key]: '*****',
       };
     }
-    const val = obj[key];
+    const val = data[key];
     if (Array.isArray(val)) {
       return {
         ...acc,
-        [key]: val.map((item) => hideOrOmitDeep(item, keys, isDelete)),
+        [key]: val.map((item) =>
+          !isPrimitive(item) ? hideOrOmitDeep(item, keys, isDelete) : item,
+        ),
       };
     }
     if (typeof val === 'object' && val !== null) {

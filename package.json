@@ -98,7 +98,7 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s",
+      "**/*.(controller|service).(t|j)s",
       "!**/node_modules/**",
       "!**/test/**"
     ],

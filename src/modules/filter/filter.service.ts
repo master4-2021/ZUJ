@@ -17,7 +17,6 @@ import {
 import { BusinessException } from '../../common/exceptions';
 import { LoggerService } from '../logger/logger.service';
 import {
-  BaseFilter,
   Filter,
   FilterOperators,
   FilterOperatorEnum,
@@ -25,6 +24,7 @@ import {
   FilterValue,
   ParsedFilterQuery,
   Sort,
+  Projections,
 } from './types';
 import createObject from '../../utils/createObject';
 import getDateOrValue from '../../utils/getDateOrValue';
@@ -49,9 +49,7 @@ export class FilterService {
     try {
       const parsedFilterQuery: ParsedFilterQuery<T> = {};
       if (query.filter) {
-        parsedFilterQuery.where = this.parseFilter(
-          this.parseFilterFromQueryString<T>(query.filter),
-        );
+        parsedFilterQuery.where = this.parseFilter(query.filter);
       }
       if (query.fields) {
         parsedFilterQuery.select = this.parseSelectFromQueryString<T>(
@@ -61,11 +59,11 @@ export class FilterService {
       if (query.sort) {
         parsedFilterQuery.order = this.parseSortFromQueryString<T>(query.sort);
       }
-      if (query.limit) {
-        parsedFilterQuery.take = query.limit;
+      if (!isNaN(+query.limit)) {
+        parsedFilterQuery.take = +query.limit;
       }
-      if (!isNaN(query.skip)) {
-        parsedFilterQuery.skip = query.skip;
+      if (!isNaN(+query.skip)) {
+        parsedFilterQuery.skip = +query.skip;
       }
       return parsedFilterQuery;
     } catch (error) {
@@ -107,7 +105,7 @@ export class FilterService {
     return And(...parsedOperators);
   }
 
-  private parseBaseFilter<T>(filter: BaseFilter<T>): FindOptionsWhere<T> {
+  private parseBaseFilter<T>(filter: Filter): FindOptionsWhere<T> {
     const parsedBaseFilter: {
       [P in keyof T]?: FindOperator<FilterValue> | FilterValue;
     } = {};
@@ -131,24 +129,31 @@ export class FilterService {
     return parsedBaseFilter as FindOptionsWhere<T>;
   }
 
-  private parseFilter<T>(filter: Filter<T>): FindOptionsWhere<T>[] {
+  private parseFilter<T>(filter: Filter): FindOptionsWhere<T>[] {
     const orFilter = [];
     const parsedFilter = {};
     for (const key in filter) {
       if (typeof filter[key] === 'object' && filter[key] !== null) {
-        if (key === 'or') {
-          filter[key].map((item: BaseFilter<T>) => {
+        if (key === 'or' && Array.isArray(filter[key])) {
+          (filter[key] as Filter[]).map((item: Filter) => {
             const parsedBaseFilter = this.parseBaseFilter(item);
             orFilter.push(parsedBaseFilter);
           });
         } else {
           Object.assign(
             parsedFilter,
-            this.parseKeyValue(key, this.convertOperators(filter[key]), false),
+            this.parseKeyValue(
+              key,
+              this.convertOperators(filter[key] as FilterOperators),
+              false,
+            ),
           );
         }
       } else {
-        Object.assign(parsedFilter, this.parseKeyValue(key, filter[key]));
+        Object.assign(
+          parsedFilter,
+          this.parseKeyValue(key, filter[key] as FilterValue),
+        );
       }
     }
     if (orFilter.length > 0) {
@@ -159,16 +164,11 @@ export class FilterService {
     return [parsedFilter];
   }
 
-  private parseFilterFromQueryString<T>(filter: string): Filter<T> {
-    return JSON.parse(filter) as Filter<T>;
-  }
-
   private parseSelectFromQueryString<T>(
-    projections: string,
+    projections: Projections,
   ): FindOptionsSelect<T> {
-    const parsed = JSON.parse(projections) as { [P in keyof T]?: number };
-    return Object.keys(parsed).reduce((acc, key) => {
-      if (parsed[key] === 1) {
+    return Object.keys(projections).reduce((acc, key) => {
+      if (projections[key] === 1) {
         Object.assign(acc, createObject(key, true));
       } else {
         Object.assign(acc, createObject(key, false));
@@ -177,12 +177,11 @@ export class FilterService {
     }, {});
   }
 
-  private parseSortFromQueryString<T>(sort: string): FindOptionsOrder<T> {
-    const parsed = JSON.parse(sort) as Sort<T>;
-    return Object.keys(parsed).reduce((acc, key) => {
+  private parseSortFromQueryString<T>(sort: Sort): FindOptionsOrder<T> {
+    return Object.keys(sort).reduce((acc, key) => {
       Object.assign(
         acc,
-        createObject(key, (parsed[key] as string).toUpperCase()),
+        createObject(key, (sort[key] as string).toUpperCase()),
       );
       return acc;
     }, {});

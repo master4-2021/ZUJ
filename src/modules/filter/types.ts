@@ -1,6 +1,3 @@
-// api GET /?type="filter"&filter={"field1":"value1","field2":{"in":["value1","value2"], "nin":["value4"], "ne":"value5","gt/gte/lt/lte":"value6", "like": "value7"},"or/nor":[{"field1":"value1","field2":"value2"}]}
-//           &limit=10&skip=0&sort={"field1":"ASC","field2":"DESC"}&fields={"field1":1,"field2":0}
-
 import {
   FindOptionsOrder,
   FindOptionsRelations,
@@ -27,29 +24,29 @@ export enum FilterOperatorEnum {
   LIKE = 'like',
 }
 
-export type Sort<T> = {
-  [P in keyof T]?: 'ASC' | 'DESC';
+export type Projections = {
+  [key: string]: 0 | 1;
+};
+
+export type Sort = {
+  [key: string]: 'ASC' | 'DESC' | 'asc' | 'desc';
 };
 
 export type FilterOperators = {
   [key in FilterOperatorEnum]?: FilterValue | FilterValue[];
 };
 
-export type BaseFilter<T> = {
-  [P in keyof T]?: FilterValue | FilterOperators;
-};
-
-export type Filter<T> = BaseFilter<T> & {
-  or?: BaseFilter<T>[];
+export type Filter = {
+  [key: string]: FilterValue | FilterOperators | Filter[];
 };
 
 export type FilterRequestQuery = {
   type?: FilterType;
-  filter?: string;
-  skip?: number;
-  limit?: number;
-  sort?: string;
-  fields?: string;
+  filter?: Filter;
+  skip?: string;
+  limit?: string;
+  sort?: Sort;
+  fields?: Projections;
 };
 
 export type ParsedFilterQuery<T> = {

@@ -56,7 +56,7 @@ export class EncryptionAndHashService {
   }
 
   private async initCipher(): Promise<{ cipher: Cipher; iv: string }> {
-    const iv = randomBytes(16).toString('hex');
+    const iv = randomBytes(16);
 
     const key = (await promisify(scrypt)(
       this.encryptionSecret,
@@ -66,7 +66,7 @@ export class EncryptionAndHashService {
 
     const cipher = createCipheriv('aes-256-ctr', key, iv);
 
-    return { cipher, iv: iv };
+    return { cipher, iv: iv.toString('hex') };
   }
 
   private async initDecipher(iv: string): Promise<Decipher> {
@@ -76,6 +76,6 @@ export class EncryptionAndHashService {
       32,
     )) as Buffer;
 
-    return createDecipheriv('aes-256-ctr', key, iv);
+    return createDecipheriv('aes-256-ctr', key, Buffer.from(iv, 'hex'));
   }
 }

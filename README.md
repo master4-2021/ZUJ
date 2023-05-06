@@ -26,6 +26,9 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Create database server
+https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-22-04
+
 ## Installation
 
 ```bash
@@ -69,22 +72,45 @@ $ yarn run test:cov
 
 ## Environment variables
 
+### dev env
 ```bash
-PORT=
-MONGO_URI=
-JWT_SECRET=
-JWT_EXPIRES_IN=
-JWT_REFRESH_SECRET=
-JWT_REFRESH_EXPIRES_IN=
-ENCRYPTION_SECRET=
-SALT_OR_ROUND=
-PG_URL=
-PG_HOST=
-PG_PORT=
-PG_USERNAME=
-PG_PASSWORD=
-PG_DATABASE=
-PG_SYCRONIZE=
+PORT=4000
+HOST='localhost'
+JWT_SECRET='jwt-secret'
+JWT_EXPIRES_IN=1
+JWT_REFRESH_SECRET='jwt-refresh-secret'
+JWT_REFRESH_EXPIRES_IN=2592000
+ENCRYPTION_SECRET='encryption-secret'
+SALT_OR_ROUND=10
+MYSQL_URL="mysql://master4:zuj@2023@127.0.0.1:3306/zuj_db"
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USERNAME=master4
+MYSQL_PASSWORD='zuj@2023'
+MYSQL_DATABASE=zuj_db
+MYSQL_SYCRONIZE=true
+
+```
+
+### e2e env
+
+```bash
+PORT=4009
+HOST='localhost'
+JWT_SECRET='jwt-secret'
+JWT_EXPIRES_IN=3600
+JWT_REFRESH_SECRET='jwt-refresh-secret'
+JWT_REFRESH_EXPIRES_IN=2592000
+ENCRYPTION_SECRET='encryption-secret'
+SALT_OR_ROUND=10
+MYSQL_URL="mysql://master4:zuj@2023@127.0.0.1:3306/zuj_e2e"
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USERNAME=master4
+MYSQL_PASSWORD='zuj@2023'
+MYSQL_DATABASE=zuj_e2e
+MYSQL_SYCRONIZE=true
+MYSQL_DROP_SCHEMA=true
 ```
 
 ## Support

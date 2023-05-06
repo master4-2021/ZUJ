@@ -1,4 +1,9 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { REFRESH_JWT_TOKEN, JWT_TOKEN } from '../../../common/constants';
@@ -33,24 +38,28 @@ export class RefreshTokenService extends BaseService<RefreshTokenEntity> {
     super(tokenRepository);
   }
 
-  async refresh(refreshToken: string): Promise<RefreshTokenPayload> {
-    const decoded = await this.verify(refreshToken, 'refresh', {
+  async refresh(
+    accessToken: string,
+    refreshToken: string,
+  ): Promise<RefreshTokenPayload> {
+    const jwtPayload = await this.verify(accessToken, 'access', {
+      ignoreExpiration: true,
+    });
+
+    const refreshJwtPayload = await this.verify(refreshToken, 'refresh', {
       ignoreExpiration: true,
     });
 
     const tokenRecord = await this.findOne({
       where: [
         {
-          userId: decoded.sub,
+          userId: refreshJwtPayload.sub,
         },
       ],
     });
 
-    if (!tokenRecord) {
-      throw new BusinessException(
-        ErrorMessageEnum.invalidRefreshToken,
-        HttpStatus.BAD_REQUEST,
-      );
+    if (tokenRecord?.userId !== jwtPayload.sub) {
+      throw new UnauthorizedException(ErrorMessageEnum.invalidCredentials);
     }
 
     const decrypted = await this.encryptionAndHashService.decrypt(
@@ -74,9 +83,9 @@ export class RefreshTokenService extends BaseService<RefreshTokenEntity> {
 
     const newAccessToken = await this.sign(
       {
-        username: decoded.username,
-        sub: decoded.sub,
-        role: decoded.role,
+        username: refreshJwtPayload.username,
+        sub: refreshJwtPayload.sub,
+        role: refreshJwtPayload.role,
       },
       'access',
     );

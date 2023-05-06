@@ -60,22 +60,6 @@ describe('UserController', () => {
     expect(userController).toBeDefined();
   });
 
-  describe('findById', () => {
-    it('should return a user', async () => {
-      expect(await userController.findById('id')).toStrictEqual(userPayload);
-
-      expect(userService.findUserById).toHaveBeenCalledWith('id');
-    });
-  });
-
-  describe('findUsers', () => {
-    it('should return a list of users', async () => {
-      expect(await userController.findUsers({})).toStrictEqual([userPayload]);
-
-      expect(userService.findUsers).toHaveBeenCalledWith({});
-    });
-  });
-
   describe('getProfile', () => {
     it('should return a user', async () => {
       expect(await userController.getProfile(validatedUser)).toStrictEqual(
@@ -104,11 +88,11 @@ describe('UserController', () => {
   describe('changePassword', () => {
     it('should return a user', async () => {
       expect(
-        await userController.changePassword('id', changePasswordDto),
+        await userController.changePassword(validatedUser, changePasswordDto),
       ).toStrictEqual(userPayload);
 
       expect(userService.changePassword).toHaveBeenCalledWith(
-        'id',
+        validatedUser.userId,
         changePasswordDto,
       );
     });

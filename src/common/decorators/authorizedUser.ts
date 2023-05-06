@@ -1,10 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { ValidatedUser } from '../../modules/auth/auth.types';
 import { Request } from 'express';
 
 export const AuthorizedUser = createParamDecorator(
-  (_data, ctx: ExecutionContext): ValidatedUser => {
+  (_data, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest() as Request;
-    return request.user as ValidatedUser;
+    return request.user;
   },
 );

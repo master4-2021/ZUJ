@@ -4,7 +4,7 @@ import { UserEntity } from '../user/user.entity';
 
 @Entity('token')
 export class RefreshTokenEntity extends BaseEntity {
-  @Column()
+  @Column('text')
   refreshToken: string;
 
   @Column()

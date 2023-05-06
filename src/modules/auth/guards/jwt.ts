@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { PUBLIC_KEY } from '../../../common/decorators/public';
+import { SKIP_GUARD_KEY } from '../../../common/decorators/skipGuard';
 import { ErrorMessageEnum } from '../../../common/types';
 
 @Injectable()
@@ -15,11 +15,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.get<boolean>(
-      PUBLIC_KEY,
+    const isSkipGuard = this.reflector.get<boolean>(
+      SKIP_GUARD_KEY,
       context.getHandler(),
     );
-    if (isPublic) return true;
+    if (isSkipGuard) return true;
 
     const request = context.switchToHttp().getRequest();
     const accessToken = request.headers.authorization?.split(' ')[1];

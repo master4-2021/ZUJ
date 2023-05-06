@@ -5,6 +5,7 @@ import { JwtPayload, ValidatedUser } from '../../../auth/auth.types';
 import { Role } from '../../../../common/decorators/roles';
 import { RefreshTokenEntity } from '../refreshToken.entity';
 import { v4 as uuid } from 'uuid';
+import { EncryptionPayload } from '../../../encryptionAndHash/types';
 
 const id = uuid();
 const userId = uuid();
@@ -20,6 +21,7 @@ const mockRevokeTokenDto: RevokeRefreshTokenDto = {
 const mockRefreshTokenPayload: RefreshTokenPayload = {
   id,
   userId,
+  iv: 'iv',
   refreshToken: 'refreshToken',
   accessToken: 'accessToken',
   refreshExpiresIn: DateTime.now().plus({ days: 30 }).toJSDate(),
@@ -32,6 +34,7 @@ const mockRevokeTokenPayload: RevokeTokenPayload = {
 const mockRefreshTokenRecord: RefreshTokenEntity = {
   id,
   userId,
+  iv: 'iv',
   refreshToken: 'encryptedRefreshToken',
   refreshExpiresIn: DateTime.now().plus({ days: 30 }).toJSDate(),
 };
@@ -40,6 +43,11 @@ const mockJwtPayload: JwtPayload = {
   username: 'username',
   role: Role.USER,
   sub: userId,
+};
+
+const mockEncryptedRefreshToken: EncryptionPayload = {
+  encryptedData: 'encryptedRefreshToken',
+  iv: 'iv',
 };
 
 const mockValidatedUser: ValidatedUser = {
@@ -56,4 +64,5 @@ export {
   mockRefreshTokenRecord,
   mockJwtPayload,
   mockValidatedUser,
+  mockEncryptedRefreshToken,
 };

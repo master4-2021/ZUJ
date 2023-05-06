@@ -87,7 +87,8 @@ export class FixtureService extends BaseService<FixtureEntity> {
         kickoffTime: 'ASC',
       },
     });
-    const dates = fixtures.map((fixture) => fixture.kickoffTime);
-    return dates.map((date) => DateTime.fromJSDate(date).toISO());
+    return fixtures.map((fixture) =>
+      DateTime.fromJSDate(fixture.kickoffTime).toISO(),
+    );
   }
 }

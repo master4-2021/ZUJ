@@ -67,6 +67,6 @@ export class AuthService {
       role: Role.USER,
     });
 
-    return hideOrOmitFields(result, ['password'], true);
+    return hideOrOmitFields(result, ['password'], true) as RegisterPayload;
   }
 }

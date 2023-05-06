@@ -46,13 +46,13 @@ export type DeepHideOrOmit<T, K extends keyof any, D extends boolean> = {
     : T[P];
 };
 
-export type Response<T = Record<string, any>> = {
+export type ResponseBody = {
   statusCode: number;
   message: string;
   url: string;
   success: boolean;
   timestamp: string;
   correlationId?: string;
-  data?: T;
+  data?: any;
   took: string;
 };

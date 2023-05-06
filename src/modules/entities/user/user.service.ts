@@ -25,7 +25,7 @@ export class UserService extends BaseService<UserEntity> {
     filter: ParsedFilterQuery<UserEntity>,
   ): Promise<UserPayload[]> {
     const users = await this.find(filter);
-    return users.map((user) => hideOrOmitDeep(user, ['password'], true));
+    return hideOrOmitDeep(users, ['password'], true) as UserPayload[];
   }
 
   async findUserById(id: string): Promise<UserPayload> {
@@ -33,7 +33,7 @@ export class UserService extends BaseService<UserEntity> {
     if (!user) {
       return null;
     }
-    return hideOrOmitDeep(user, ['password'], true);
+    return hideOrOmitDeep(user, ['password'], true) as UserPayload;
   }
 
   async updateUserById(
@@ -41,7 +41,7 @@ export class UserService extends BaseService<UserEntity> {
     updateDto: UpdateUserDto,
   ): Promise<UserPayload> {
     const updated = await this.updateById(id, updateDto);
-    return hideOrOmitDeep(updated, ['password'], true);
+    return hideOrOmitDeep(updated, ['password'], true) as UserPayload;
   }
 
   async changePassword(
@@ -86,6 +86,6 @@ export class UserService extends BaseService<UserEntity> {
       password: newPasswordHash,
     });
 
-    return hideOrOmitDeep(updated, ['password'], true);
+    return hideOrOmitDeep(updated, ['password'], true) as UserPayload;
   }
 }

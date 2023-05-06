@@ -58,10 +58,14 @@ describe('RefreshTokencontroller', () => {
   describe('refreshToken', () => {
     it('should return a refresh token payload', async () => {
       expect(
-        await refreshTokenController.refreshToken(refreshTokenDto),
+        await refreshTokenController.refreshToken(
+          refreshTokenDto,
+          'Bearer accessToken',
+        ),
       ).toStrictEqual(refreshTokenPayload);
 
       expect(refreshTokenService.refresh).toBeCalledWith(
+        'accessToken',
         refreshTokenDto.refreshToken,
       );
     });
