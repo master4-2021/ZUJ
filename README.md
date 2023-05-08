@@ -86,13 +86,13 @@ JWT_REFRESH_SECRET='jwt-refresh-secret'
 JWT_REFRESH_EXPIRES_IN=2592000
 ENCRYPTION_SECRET='encryption-secret'
 SALT_OR_ROUND=10
-MYSQL_URL="mysql://master4:zuj@2023@127.0.0.1:3306/zuj_db" # mysql://username:password@host:port/database_name
-MYSQL_HOST=127.0.0.1
+MYSQL_URL="mysql://admin:master42023@mysql-2.coybptane5cg.ap-southeast-1.rds.amazonaws.com:3306/master4" # mysql://username:password@host:port/database_name
+MYSQL_HOST=mysql-2.coybptane5cg.ap-southeast-1.rds.amazonaws.com
 MYSQL_PORT=3306
-MYSQL_USERNAME=master4
-MYSQL_PASSWORD='zuj@2023'
-MYSQL_DATABASE=zuj_db
-MYSQL_SYCRONIZE=true
+MYSQL_USERNAME=admin
+MYSQL_PASSWORD=master42023
+MYSQL_DATABASE=master4
+MYSQL_SYNCRONIZE=true
 
 ```
 
@@ -109,13 +109,13 @@ JWT_REFRESH_SECRET='jwt-refresh-secret'
 JWT_REFRESH_EXPIRES_IN=2592000
 ENCRYPTION_SECRET='encryption-secret'
 SALT_OR_ROUND=10
-MYSQL_URL="mysql://master4:zuj@2023@127.0.0.1:3306/zuj_e2e" # mysql://username:password@host:port/database_name
-MYSQL_HOST=127.0.0.1
+MYSQL_URL="mysql://admin:master42023@mysql-2.coybptane5cg.ap-southeast-1.rds.amazonaws.com:3306/master4_e2e" # mysql://username:password@host:port/database_name
+MYSQL_HOST=mysql-2.coybptane5cg.ap-southeast-1.rds.amazonaws.com
 MYSQL_PORT=3306
-MYSQL_USERNAME=master4
-MYSQL_PASSWORD='zuj@2023'
-MYSQL_DATABASE=zuj_e2e
-MYSQL_SYCRONIZE=true
+MYSQL_USERNAME=admin
+MYSQL_PASSWORD=master42023
+MYSQL_DATABASE=master4_e2e
+MYSQL_SYNCRONIZE=true
 MYSQL_DROP_SCHEMA=true
 ```
 

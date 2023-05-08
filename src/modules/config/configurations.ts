@@ -9,7 +9,7 @@ export default () => ({
       username: process.env.MYSQL_USERNAME,
       password: process.env.MYSQL_PASSWORD,
       database: process.env.MYSQL_DATABASE,
-      synchronize: process.env.MYSQL_SYCRONIZE,
+      synchronize: process.env.MYSQL_SYNCRONIZE,
       dropSchema: process.env.MYSQL_DROP_SCHEMA,
     },
   },

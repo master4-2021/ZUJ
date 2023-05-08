@@ -36,7 +36,7 @@ export class HealthController {
         ),
       () => this.db.pingCheck('MySQL', { timeout: 1500 }),
       () =>
-        this.disk.checkStorage('Storage', { path: '/', thresholdPercent: 0.5 }),
+        this.disk.checkStorage('Storage', { path: '/', thresholdPercent: 0.7 }),
       () => this.memory.checkHeap('memory_heap', 1024 * 1024 * 1024),
       () => this.memory.checkRSS('memory_rss', 1024 * 1024 * 1024),
     ]);
