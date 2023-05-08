@@ -121,6 +121,38 @@ MYSQL_DROP_SCHEMA=true
 
 ## APIs
 
+### Login
+
+```
+[POST] /api/auth/login
+- Body: 
+{
+  "username": "root",
+  "password": "root"
+}
+
+- Response: 
+{
+  "url": "[POST] /api/auth/login",
+  "success": true,
+  "statusCode": 201,
+  "message": "OK",
+  "data": {
+    "refreshToken": "*****",
+    "iv": "f23957f0bcf745b530c05f5d540441aa",
+    "userId": "29b98f22-5bf9-494b-818c-7ae549d0fef5",
+    "refreshExpiresIn": "2023-06-07T09:03:21.420Z",
+    "id": "56d3bb08-ccc4-477b-bb0e-bb237f416fe6",
+    "createdAt": "2023-05-08T02:03:21.556Z",
+    "updatedAt": "2023-05-08T02:03:21.556Z",
+    "accessToken": "*****"
+  },
+  "correlationId": "ffc7ec92-013e-400e-9d97-136d0a244f24",
+  "timestamp": "2023-05-08T16:03:21.720+07:00",
+  "took": "650 ms"
+}
+```
+
 ### Get fixture calendar
 
 ```
@@ -131,6 +163,9 @@ MYSQL_DROP_SCHEMA=true
   "from": "2023-05-01T00:00:00.000+07:00",
   "to": "2023-05-31T23:59:59.999+07:00"
 }
+
+- Headers:
+Authorization: "Bearer ${token}"
 
 - Response:
 {
@@ -167,6 +202,9 @@ MYSQL_DROP_SCHEMA=true
   "skip": "0",
   "limit": "1"
 }
+
+- Headers:
+Authorization: "Bearer ${token}"
 
 - Response:
 {
