@@ -36,6 +36,12 @@ https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-
 $ yarn install
 ```
 
+## Prepare husky
+
+```bash
+$ yarn prepare
+```
+
 ## Initialize database
 
 ```bash
