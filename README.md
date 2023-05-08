@@ -81,7 +81,7 @@ Create env file: .env.dev in the root
 PORT=4000
 HOST='localhost'
 JWT_SECRET='jwt-secret'
-JWT_EXPIRES_IN=1
+JWT_EXPIRES_IN=3600
 JWT_REFRESH_SECRET='jwt-refresh-secret'
 JWT_REFRESH_EXPIRES_IN=2592000
 ENCRYPTION_SECRET='encryption-secret'
