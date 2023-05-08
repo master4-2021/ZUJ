@@ -18,6 +18,7 @@ import configurations from './configurations';
         MYSQL_PASSWORD: Joi.string().required(),
         MYSQL_DATABASE: Joi.string().required(),
         MYSQL_SYNCRONIZE: Joi.string().required(),
+        MYSQL_DROP_SCHEMA: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRES_IN: Joi.number().required(),
         JWT_REFRESH_SECRET: Joi.string().required(),
