@@ -11,7 +11,7 @@ import {
   FixtureCarendarPayload,
   FixturePayload,
 } from './fixture.types';
-import { ParsedFilterQuery } from '../../filter/types';
+import { ParsedFilterQuery } from '../../filter/filter.types';
 import { ErrorMessageEnum } from '../../../common/types';
 import { Filter } from '../../../common/decorators/filter';
 

@@ -2,7 +2,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { FilterService } from '../../modules/filter/filter.service';
 import { PARSED_FILTER } from '../constants';
-import { FilterRequestQuery, FilterType } from '../../modules/filter/types';
+import { FilterRequestQuery, FilterType } from '../../modules/filter/filter.types';
 
 @Injectable()
 export class FilterQueryMiddleware implements NestMiddleware {

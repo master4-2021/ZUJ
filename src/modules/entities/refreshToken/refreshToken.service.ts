@@ -18,7 +18,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DateTime } from 'luxon';
 import { RefreshTokenPayload, RevokeTokenPayload } from './refreshToken.types';
-import { EncryptionAndHashService } from '../../encryptionAndHash/encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../../encryptionAndHash/encryptionAndHash.service';
 import { ErrorMessageEnum } from '../../../common/types';
 import { LoggerService } from '../../logger/logger.service';
 

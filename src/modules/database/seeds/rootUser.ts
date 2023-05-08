@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
 import { Role } from '../../../common/decorators/roles';
-import { EncryptionAndHashService } from '../../encryptionAndHash/encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../../encryptionAndHash/encryptionAndHash.service';
 import { UserEntity } from '../../entities/user/user.entity';
 
 const rootUser: UserEntity = {

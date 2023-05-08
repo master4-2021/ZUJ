@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FilterService } from '../filter.service';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
-import { FilterRequestQuery, ParsedFilterQuery } from '../types';
+import { FilterRequestQuery, ParsedFilterQuery } from '../filter.types';
 import {
   date1,
   date2,

@@ -5,7 +5,7 @@ import {
   FixturePayload,
   FixtureStatus,
 } from '../fixture.types';
-import { ParsedFilterQuery } from '../../../filter/types';
+import { ParsedFilterQuery } from '../../../filter/filter.types';
 import { FixtureEntity } from '../fixture.entity';
 import { And, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Region } from '../../tournament/tournament.types';

@@ -25,7 +25,7 @@ import {
   ParsedFilterQuery,
   Sort,
   Projections,
-} from './types';
+} from './filter.types';
 import createObject from '../../utils/createObject';
 import getDateOrValue from '../../utils/getDateOrValue';
 import { ErrorMessageEnum } from '../../common/types';

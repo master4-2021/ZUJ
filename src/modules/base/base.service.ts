@@ -6,7 +6,7 @@ import {
   In,
   Repository,
 } from 'typeorm';
-import { ParsedFilterQuery } from '../filter/types';
+import { ParsedFilterQuery } from '../filter/filter.types';
 import { BaseEntity } from './base.entity';
 import { BusinessException } from '../../common/exceptions';
 import { ErrorMessageEnum } from '../../common/types';

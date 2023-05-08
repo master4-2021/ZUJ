@@ -1,6 +1,6 @@
 import { INestApplicationContext } from '@nestjs/common';
 import { createRootUser } from '../modules/database/seeds/rootUser';
-import { EncryptionAndHashService } from '../modules/encryptionAndHash/encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../modules/encryptionAndHash/encryptionAndHash.service';
 import { LoggerService } from '../modules/logger/logger.service';
 import { UserEntity } from '../modules/entities/user/user.entity';
 import { generateCode } from '../utils/codeGenerator';

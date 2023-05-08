@@ -10,7 +10,7 @@ import {
 import { promisify } from 'util';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { EncryptionPayload } from './types';
+import { EncryptionPayload } from './encryptionAndHash.types';
 
 @Injectable()
 export class EncryptionAndHashService {

@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { TestingModule, Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtPayload, ValidatedUser } from '../../../auth/auth.types';
-import { EncryptionAndHashService } from '../../../encryptionAndHash/encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../../../encryptionAndHash/encryptionAndHash.service';
 import { RefreshTokenEntity } from '../refreshToken.entity';
 import { RefreshTokenService } from '../refreshToken.service';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';

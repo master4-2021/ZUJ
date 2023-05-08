@@ -4,7 +4,7 @@ import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FixtureEntity } from '../fixture.entity';
 import { mockRepository } from '../../../database/test/database.service.mock';
-import { ParsedFilterQuery } from '../../../filter/types';
+import { ParsedFilterQuery } from '../../../filter/filter.types';
 import {
   CalendarQuery,
   FixtureCarendarPayload,

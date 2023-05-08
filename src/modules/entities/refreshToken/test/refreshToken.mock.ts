@@ -5,7 +5,7 @@ import { JwtPayload, ValidatedUser } from '../../../auth/auth.types';
 import { Role } from '../../../../common/decorators/roles';
 import { RefreshTokenEntity } from '../refreshToken.entity';
 import { v4 as uuid } from 'uuid';
-import { EncryptionPayload } from '../../../encryptionAndHash/types';
+import { EncryptionPayload } from '../../../encryptionAndHash/encryptionAndHash.types';
 
 const id = uuid();
 const userId = uuid();

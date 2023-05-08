@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { FixtureService } from './fixture.service';
 import { Role, Roles } from '../../../common/decorators/roles';
 import { Filter } from '../../../common/decorators/filter';
-import { ParsedFilterQuery } from '../../filter/types';
+import { ParsedFilterQuery } from '../../filter/filter.types';
 import { FixtureEntity } from './fixture.entity';
 import {
   CalendarQuery,

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { EncryptionAndHashService } from '../encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../encryptionAndHash.service';
 
 describe('EncryptionAndHashService', () => {
   let encryptionAndHashService: EncryptionAndHashService;

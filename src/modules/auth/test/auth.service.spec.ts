@@ -1,4 +1,4 @@
-import { EncryptionAndHashService } from '../../encryptionAndHash/encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../../encryptionAndHash/encryptionAndHash.service';
 import { RefreshTokenService } from '../../entities/refreshToken/refreshToken.service';
 import { UserEntity } from '../../entities/user/user.entity';
 import { UserService } from '../../entities/user/user.service';

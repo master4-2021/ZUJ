@@ -9,7 +9,7 @@ import {
   MoreThanOrEqual,
   Not,
 } from 'typeorm';
-import { FilterRequestQuery, ParsedFilterQuery } from '../types';
+import { FilterRequestQuery, ParsedFilterQuery } from '../filter.types';
 import { DateTime } from 'luxon';
 
 const date1 = DateTime.now().toISO();

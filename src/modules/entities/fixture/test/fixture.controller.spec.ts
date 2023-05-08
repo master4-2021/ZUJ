@@ -3,7 +3,7 @@ import { FixtureService } from '../fixture.service';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
 import { FixtureEntity } from '../fixture.entity';
 import { FixtureController } from '../fixture.controller';
-import { ParsedFilterQuery } from '../../../filter/types';
+import { ParsedFilterQuery } from '../../../filter/filter.types';
 import {
   CalendarQuery,
   FixtureCarendarPayload,

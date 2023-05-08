@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../user.service';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
-import { EncryptionAndHashService } from '../../../encryptionAndHash/encrypttionAndHash.service';
+import { EncryptionAndHashService } from '../../../encryptionAndHash/encryptionAndHash.service';
 import { ChangePasswordDto, UpdateUserDto } from '../user.dto';
 import { UserEntity } from '../user.entity';
 import {

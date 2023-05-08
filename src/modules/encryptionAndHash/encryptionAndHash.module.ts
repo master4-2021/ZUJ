@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { EncryptionAndHashService } from './encrypttionAndHash.service';
+import { EncryptionAndHashService } from './encryptionAndHash.service';
 
 @Module({
   imports: [],
