@@ -75,6 +75,8 @@ $ yarn run test:cov
 
 ### dev env
 
+Create env file: .env.dev in the root
+
 ```bash
 PORT=4000
 HOST='localhost'
@@ -95,6 +97,8 @@ MYSQL_SYCRONIZE=true
 ```
 
 ### e2e env
+
+Create env file: .env.e2e in the root
 
 ```bash
 PORT=4009
